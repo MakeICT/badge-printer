@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-import os, sys, traceback
-from xml.sax.saxutils import quoteattr
+import os, sys, traceback, io
+import base64
+from functools import partial
 
-from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport, QtSvg, uic
+from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport, QtSvg, uic, QtWebEngineWidgets
+
+import pyqrcode
 
 #from V4L2
 
@@ -36,8 +39,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.mainWindow.preview.loadFinished.connect(self._contentLoaded)
 		
-		self.mainWindow.firstName.textChanged.connect(self._updatePreview)
-		self.mainWindow.lastName.textChanged.connect(self._updatePreview)
+		self.mainWindow.firstName.textChanged.connect(partial(self._updatePreview, True))
+		self.mainWindow.lastName.textChanged.connect(partial(self._updatePreview, True))
 		self.mainWindow.title.textChanged.connect(self._updatePreview)
 		self.mainWindow.qrInput.textChanged.connect(self._updatePreview)
 
@@ -147,49 +150,79 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self._updatePreview()
 		self.autoScale()
 
-	def autoScale(self, contentSize=None):
+	def autoScale(self):
+
 		preview = self.mainWindow.preview
+		def haveDocumentSize(size):
+			if 0 in size:
+				return
+			contentSize = QtCore.QSize(size[0], size[1])
 
-		if contentSize is None or True:
-			contentSize = preview.page().currentFrame().contentsSize()
+			widthRatio = preview.width() / contentSize.width()
+			heightRatio = preview.height() / contentSize.height()
+			scale = min(widthRatio, heightRatio)
+			preview.setZoomFactor(scale)
 
-		if contentSize.width() == 0:
-			return
-		
-		widthRatio = preview.width() / contentSize.width()
-		heightRatio = preview.height() / contentSize.height()
-		scale = min(widthRatio, heightRatio)
-		if scale == 1:
-			return
-		preview.setZoomFactor(scale)
+		js = '[document.documentElement.scrollWidth, document.documentElement.scrollHeight]'
+		preview.page().runJavaScript(js, haveDocumentSize)
+
 
 	def eventFilter(self, obj, event):
 		if obj == self.mainWindow.preview:
 			if isinstance(event, QtGui.QResizeEvent):
-				self.ignoreNextScaleChange = False
-				self.mainWindow.preview.setZoomFactor(1)
+				#self.mainWindow.preview.setZoomFactor(1)
+				#self.ignoreNextScaleChange = False
 				self.autoScale()
 
 		return super().eventFilter(obj, event)
 
-	def _updatePreview(self):
-		# Hack alert :(
-		# QWebElement.replace/setPlainText/setXml/other things failed
-		# In the end, injecting JavaScript is the only thing that seems to work for changing element contents on-the-fly
-		js = 'this.textContent = "%s";'
-		frame = self.mainWindow.preview.page().currentFrame()
+	def _updatePreview(self, updateQRInput=False):
+		self.autoScale()
+		# Hack-job alert :(
+		# QtWebEngine cannot access page elements...
+		# But it can run arbirtary javascript!
+		js = '''
+			var el = document.getElementById("%s");
+			if(el) el.firstChild.textContent = "%s";
+		'''
+
 		def update(id, value):
-			node = frame.findFirstElement('#%s' % id)
-			el = node.findFirst('tspan')
-			value = value.replace('"', '\\"')
-			el.evaluateJavaScript(js % value)
+			self.mainWindow.preview.page().runJavaScript(js % (id, value))
 		
 		update('firstName', self.mainWindow.firstName.text())
 		update('lastName', self.mainWindow.lastName.text())
 		update('title', self.mainWindow.title.text())
 
-		# @TODO: update QR code
+		if updateQRInput:
+			nameInputs = [
+				self.mainWindow.firstName.text().strip(),
+				self.mainWindow.lastName.text().strip(),
+			]
+			while '' in nameInputs:
+				nameInputs.remove('')
 
+			for id, name in enumerate(nameInputs):
+				name = name.replace(' ', '_')
+				name = QtCore.QUrl.toPercentEncoding(name).data()
+				name = name.decode('utf-8')
+				nameInputs[id] = name
+
+			name = '_'.join(nameInputs)
+
+			if name == '':
+				self.mainWindow.qrInput.setText('http://makeict.org/')
+			else:
+				self.mainWindow.qrInput.setText('http://makeict.org/wiki/User:%s' % name)
+
+		buffer = io.BytesIO()
+		qr = pyqrcode.create(self.mainWindow.qrInput.text())
+		qr.png(buffer, scale=10, quiet_zone=0)
+		data = 'data:image/png;base64,%s' % base64.b64encode(buffer.getvalue()).decode('ascii')
+		js = '''
+			var el = document.getElementById("qr");
+			if(el) el.setAttribute("xlink:href", "%s");
+		'''
+		self.mainWindow.preview.page().runJavaScript(js % data)
 
 def unhandledError(exc, parent=None):
 	stack = traceback.format_exc()

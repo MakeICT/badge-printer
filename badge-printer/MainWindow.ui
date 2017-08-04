@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>593</width>
-    <height>544</height>
+    <width>715</width>
+    <height>497</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -18,17 +18,16 @@
     <normaloff>images/MakeICT-Logo-small.svg</normaloff>images/MakeICT-Logo-small.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,3">
     <item>
-     <widget class="Line" name="line">
-      <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+     <widget class="QWebEngineView" name="preview" native="true">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
       </property>
-     </widget>
-    </item>
-    <item>
-     <widget class="QWebView" name="preview">
-      <property name="url">
+      <property name="url" stdset="0">
        <url>
         <string>about:blank</string>
        </url>
@@ -173,7 +172,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>593</width>
+     <width>715</width>
      <height>30</height>
     </rect>
    </property>
@@ -253,9 +252,9 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebView</class>
+   <class>QWebEngineView</class>
    <extends>QWidget</extends>
-   <header>QtWebKitWidgets/QWebView</header>
+   <header>QtWebEngine/QWebEngineView</header>
   </customwidget>
  </customwidgets>
  <resources/>

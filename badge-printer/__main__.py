@@ -31,6 +31,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.reloadTemplates()
 
 		self.mainWindow.templateSelector.currentIndexChanged.connect(self._templateSelected)
+		
+		self.mainWindow.preview.installEventFilter(self)
 
 	def _path(self, *paths):
 		return os.path.join(self.basePath, *paths)
@@ -128,10 +130,31 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		try:
 			filename = self._path('templates', filename)
 			self.templateFilename = filename
-			self.mainWindow.previewBadge.setPixmap(QtGui.QPixmap(filename))
+
+			self.previewScene = QtWidgets.QGraphicsScene(self.mainWindow.preview)
+			badge = QtSvg.QGraphicsSvgItem(self.templateFilename)
+			self.previewScene.addItem(badge)
+
+			self.mainWindow.preview.setScene(self.previewScene)
+			
+			self.autoScale()
 			self._updatePreview()
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
+
+	def autoScale(self):
+		self.mainWindow.preview.resetTransform()
+		widthRatio = self.mainWindow.preview.width() / self.previewScene.width()
+		heightRatio = self.mainWindow.preview.height() / self.previewScene.height()
+		scale = .97 * min(widthRatio, heightRatio)
+		self.mainWindow.preview.scale(scale, scale)
+
+	def eventFilter(self, obj, event):
+		if obj == self.mainWindow.preview:
+			if isinstance(event, QtGui.QResizeEvent):
+				self.autoScale()
+
+		return super().eventFilter(obj, event)
 
 	def _updatePreview(self):
 		pass

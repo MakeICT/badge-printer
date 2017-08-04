@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>590</width>
+    <width>593</width>
     <height>544</height>
    </rect>
   </property>
@@ -27,24 +27,11 @@
      </widget>
     </item>
     <item>
-     <widget class="QGraphicsView" name="preview">
-      <property name="minimumSize">
-       <size>
-        <width>300</width>
-        <height>477</height>
-       </size>
-      </property>
-      <property name="verticalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="horizontalScrollBarPolicy">
-       <enum>Qt::ScrollBarAlwaysOff</enum>
-      </property>
-      <property name="dragMode">
-       <enum>QGraphicsView::ScrollHandDrag</enum>
-      </property>
-      <property name="resizeAnchor">
-       <enum>QGraphicsView::AnchorUnderMouse</enum>
+     <widget class="QWebView" name="preview">
+      <property name="url">
+       <url>
+        <string>about:blank</string>
+       </url>
       </property>
      </widget>
     </item>
@@ -186,8 +173,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>590</width>
-     <height>27</height>
+     <width>593</width>
+     <height>30</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -264,6 +251,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>QWebView</class>
+   <extends>QWidget</extends>
+   <header>QtWebKitWidgets/QWebView</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections>
   <connection>

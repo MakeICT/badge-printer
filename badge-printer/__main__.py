@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, traceback
-#import cups
+from xml.sax.saxutils import quoteattr
 
 from PyQt5 import QtCore, QtGui, QtWidgets, QtPrintSupport, QtSvg, uic
 
@@ -33,6 +33,13 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.templateSelector.currentIndexChanged.connect(self._templateSelected)
 		
 		self.mainWindow.preview.installEventFilter(self)
+
+		self.mainWindow.preview.loadFinished.connect(self._contentLoaded)
+		
+		self.mainWindow.firstName.textChanged.connect(self._updatePreview)
+		self.mainWindow.lastName.textChanged.connect(self._updatePreview)
+		self.mainWindow.title.textChanged.connect(self._updatePreview)
+		self.mainWindow.qrInput.textChanged.connect(self._updatePreview)
 
 	def _path(self, *paths):
 		return os.path.join(self.basePath, *paths)
@@ -131,36 +138,62 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			filename = self._path('templates', filename)
 			self.templateFilename = filename
 
-			self.previewScene = QtWidgets.QGraphicsScene(self.mainWindow.preview)
-			badge = QtSvg.QGraphicsSvgItem(self.templateFilename)
-			self.previewScene.addItem(badge)
-
-			self.mainWindow.preview.setScene(self.previewScene)
-			
-			self.autoScale()
-			self._updatePreview()
+			self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(filename))
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
-	def autoScale(self):
-		self.mainWindow.preview.resetTransform()
-		widthRatio = self.mainWindow.preview.width() / self.previewScene.width()
-		heightRatio = self.mainWindow.preview.height() / self.previewScene.height()
-		scale = .97 * min(widthRatio, heightRatio)
-		self.mainWindow.preview.scale(scale, scale)
+	def _contentLoaded(self):
+		self.mainWindow.preview.setZoomFactor(1)
+		self._updatePreview()
+		self.autoScale()
+
+	def autoScale(self, contentSize=None):
+		preview = self.mainWindow.preview
+
+		if contentSize is None or True:
+			contentSize = preview.page().currentFrame().contentsSize()
+
+		if contentSize.width() == 0:
+			return
+		
+		widthRatio = preview.width() / contentSize.width()
+		heightRatio = preview.height() / contentSize.height()
+		scale = min(widthRatio, heightRatio)
+		if scale == 1:
+			return
+		preview.setZoomFactor(scale)
 
 	def eventFilter(self, obj, event):
 		if obj == self.mainWindow.preview:
 			if isinstance(event, QtGui.QResizeEvent):
+				self.ignoreNextScaleChange = False
+				self.mainWindow.preview.setZoomFactor(1)
 				self.autoScale()
 
 		return super().eventFilter(obj, event)
 
 	def _updatePreview(self):
-		pass
+		# Hack alert :(
+		# QWebElement.replace/setPlainText/setXml/other things failed
+		# In the end, injecting JavaScript is the only thing that seems to work for changing element contents on-the-fly
+		js = 'this.textContent = "%s";'
+		frame = self.mainWindow.preview.page().currentFrame()
+		def update(id, value):
+			node = frame.findFirstElement('#%s' % id)
+			el = node.findFirst('tspan')
+			value = value.replace('"', '\\"')
+			el.evaluateJavaScript(js % value)
+		
+		update('firstName', self.mainWindow.firstName.text())
+		update('lastName', self.mainWindow.lastName.text())
+		update('title', self.mainWindow.title.text())
+
+		# @TODO: update QR code
+
 
 def unhandledError(exc, parent=None):
 	stack = traceback.format_exc()
+	print(stack)
 
 	dialog = QtWidgets.QMessageBox(parent)
 	dialog.setWindowTitle('Error :(')

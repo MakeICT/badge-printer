@@ -74,7 +74,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		QtWidgets.QMessageBox.about(
 			self.mainWindow,
 			'MakeICT Badge Printer',
-			'<p>This app was writting by <a href="http://greenlightgo.org">Dominic Canare</a> for MakeICT.</p>' + 
+			'<p>This app was made with &hearts; by <a href="http://greenlightgo.org">Dominic Canare</a> for MakeICT.</p>' + 
 			'<p>Use, modification, and redistribution of this application is allowed under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>.</p>' +
 			'<p>For more information, visit <a href="http://github.com/makeict/badge-printer">this project\'s GitHub page</a>.</p>' +
 			'<p>For more immediate help, send an email to <a href="it@makeict.org">it@makeict.org</a>.</p>'

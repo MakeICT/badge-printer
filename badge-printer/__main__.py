@@ -91,7 +91,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			elif data == RELOAD:
 				self.reloadTemplates()
 			else:
-				self.loadTemplate(self._path('templates', combobox.currentText()))
+				self.loadTemplate(combobox.currentText())
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
@@ -224,7 +224,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			combobox = self.mainWindow.templateSelector
 			combobox.clear()
 			templates = []
-			for filename in os.listdir(self._path('templates')):
+			for filename in os.listdir('templates'):
 				if filename[-4:].lower() == '.svg':
 					templates.append(filename)
 			templates.sort()
@@ -242,10 +242,11 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 	def loadTemplate(self, filename):
 		try:
-			filename = self._path('templates', filename)
+			filename = os.path.join('templates', filename)
+			print(filename)
 			self.templateFilename = filename
 
-			self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(filename))
+			self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath(filename)))
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 

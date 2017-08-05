@@ -13,13 +13,15 @@ The program captures images from a webcam and personal information for use with 
 
 ## Installation
 
-Install the following dependencies
-* `PyQT5`, including:
-	* `QtWebEngine` (`python3-pyqt5.qtwebkit`)
-	* `QtMultimedia`
+Install the following dependencies:
 * `gstreamer1.0-plugins-bad`
+* `pyqt5`, including:
+	* `QtWebEngine`
+	* `QtMultimedia`
 * `pyqrcode`
 * `pypng`
+
+`pip` is recommended for all Python dependencies.
 
 ## Usage
 

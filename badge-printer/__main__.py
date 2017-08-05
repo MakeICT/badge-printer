@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, traceback, io
-import base64
+import base64, shutil
 from functools import partial
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
@@ -88,10 +88,33 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
-
-	def saveACopy(self):
+	def saveACopy(self, filename=False):
 		try:
-			raise NotImplementedError()
+			if not isinstance(filename, str):
+				result = QtWidgets.QFileDialog.getSaveFileName(
+					self.mainWindow,
+					'Save a copy',
+					'%s.svg' % self.makeFileFriendlyName(),
+					'SVG Files (*.svg);;All files (*)'
+				)
+				if result[0] == '':
+					return
+
+				filename = result[0]
+				if filename[-4:].lower() != '.svg':
+					filename += '.svg'
+
+			def doSave(filename, content):
+				try:
+					with open(filename, 'w') as saveFile:
+						saveFile.write(content)
+				except Exception as exc:
+					unhandledError(exc, self.mainWindow)
+
+			self.mainWindow.preview.page().runJavaScript(
+				'document.documentElement.outerHTML',
+				partial(doSave, filename)
+			)
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
@@ -137,19 +160,39 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 	def attemptPrint(self):
 		try:
-			raise NotImplementedError()
-
-			printer = QtPrintSupport.QPrinter()
-			dialog = QtPrintSupport.QPrintDialog(printer, self.mainWindow)
+			self.printer = QtPrintSupport.QPrinter()
+			dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
 			if dialog.exec_() != QtWidgets.QDialog.Accepted:
 				return
+			self._adjustPreviewPosition()
+
+			def printingDone(ok):
+				if ok:
+					self.mainWindow.statusBar().showMessage('Printing done!', 5000)
+				else:
+					self.mainWindow.statusBar().showMessage('Printing failed :(')
+				self.autoScale()
 			
-			painter = QtGui.QPainter(printer)
-			painter.begin(printer)
-			painter.end()
+			self.mainWindow.statusBar().showMessage('Printing...')
+			self.mainWindow.preview.page().print(self.printer, printingDone)
+
+			name = self.makeFileFriendlyName()
+			filename = os.path.join('archive', '%s.svg' % name)
+			self.saveACopy(filename)
+			if os.path.isfile(os.path.join('archive', '_capture.jpg')):
+				shutil.move(
+					os.path.join('archive', '_capture.jpg'),
+					os.path.join('archive', '%s.jpg' % name)
+				)
 
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
+
+	def makeFileFriendlyName(self):
+		name = '%s_%s' % (self.mainWindow.firstName.text(), self.mainWindow.lastName.text())
+		if name == '_':
+			name = 'Anonymous_McNameface'
+		return name
 
 	def exit(self):
 		try:
@@ -207,20 +250,28 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			preview.setZoomFactor(.9*scale)
 
 			# try to vertically center...
-			preview.page().runJavaScript('''
-				document.documentElement.style.margin = "auto";
-				document.documentElement.style.marginTop = "%dpx";
-			''' % int((preview.height() - scale*contentSize.height())))
+			self._adjustPreviewPosition(int((preview.height() - scale*contentSize.height())))
 
 		js = '[document.documentElement.scrollWidth, document.documentElement.scrollHeight]'
 		preview.page().runJavaScript(js, haveDocumentSize)
 
+	def _adjustPreviewPosition(self, marginInPixels=0):
+		preview = self.mainWindow.preview
+		preview.page().runJavaScript('''
+			document.documentElement.style.margin = "auto";
+			document.documentElement.style.marginTop = "%dpx";
+		''' % marginInPixels)
+
+		if marginInPixels == 0:
+			preview.page().setBackgroundColor(QtCore.Qt.white)
+		else:
+			preview.page().setBackgroundColor(
+				preview.palette().color(preview.backgroundRole())
+			)
 
 	def eventFilter(self, obj, event):
 		if obj == self.mainWindow.preview:
 			if isinstance(event, QtGui.QResizeEvent):
-				#self.mainWindow.preview.setZoomFactor(1)
-				#self.ignoreNextScaleChange = False
 				self.autoScale()
 
 		return super().eventFilter(obj, event)

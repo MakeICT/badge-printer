@@ -22,6 +22,11 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.basePath = os.path.dirname(os.path.realpath(__file__))
 		self.templateFilename = None
 		self.camera = None
+		
+		self.qrTimer = QtCore.QTimer()
+		self.qrTimer.setSingleShot(True)
+		self.qrTimer.setInterval(3000)
+		self.qrTimer.timeout.connect(self.updateQRDisplay)
 
 		self.mainWindow = uic.loadUi(self._path('MainWindow.ui'))
 		self.mainWindow.previewTabs.tabBar().hide()
@@ -50,11 +55,18 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.preview.installEventFilter(self)
 
 		self.mainWindow.preview.loadFinished.connect(self._contentLoaded)
+
+		def textFieldUpdated(text, updateQrInput=False):
+			self._updatePreview(updateQrInput)
 		
 		self.mainWindow.firstName.textChanged.connect(partial(self._updatePreview, True))
 		self.mainWindow.lastName.textChanged.connect(partial(self._updatePreview, True))
-		self.mainWindow.title.textChanged.connect(self._updatePreview)
-		self.mainWindow.qrInput.textChanged.connect(self._updatePreview)
+		self.mainWindow.title.textChanged.connect(textFieldUpdated)
+		self.mainWindow.qrInput.textChanged.connect(textFieldUpdated)
+
+	def doItNowDoItGood(self):
+		self.mainWindow.showNormal()
+		self.exec_()
 
 	def _path(self, *paths):
 		return os.path.join(self.basePath, *paths)
@@ -77,10 +89,6 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		result = QtWidgets.QFileDialog.getOpenFileName(self.mainWindow, 'Open file', '.', 'SVG Files (*.svg);;All files (*)')
 		if result[0] != '':
 			self.loadTemplate(result[0])
-
-	def doItNowDoItGood(self):
-		self.mainWindow.showNormal()
-		self.exec_()
 
 	def attemptImport(self):
 		try:
@@ -164,7 +172,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
 			if dialog.exec_() != QtWidgets.QDialog.Accepted:
 				return
-			self._adjustPreviewPosition()
+			self._adjustPreviewPosition(printPrep=True)
 
 			def printingDone(ok):
 				if ok:
@@ -232,7 +240,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			unhandledError(exc, self.mainWindow)
 
 	def _contentLoaded(self):
-		self._updatePreview()
+		self._updatePreview(False)
 		self.autoScale()
 
 	def autoScale(self):
@@ -255,14 +263,14 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		js = '[document.documentElement.scrollWidth, document.documentElement.scrollHeight]'
 		preview.page().runJavaScript(js, haveDocumentSize)
 
-	def _adjustPreviewPosition(self, marginInPixels=0):
+	def _adjustPreviewPosition(self, marginInPixels=0, printPrep=False):
 		preview = self.mainWindow.preview
 		preview.page().runJavaScript('''
 			document.documentElement.style.margin = "auto";
 			document.documentElement.style.marginTop = "%dpx";
 		''' % marginInPixels)
 
-		if marginInPixels == 0:
+		if printPrep:
 			preview.page().setBackgroundColor(QtCore.Qt.white)
 		else:
 			preview.page().setBackgroundColor(
@@ -277,43 +285,50 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		return super().eventFilter(obj, event)
 
 	def _updatePreview(self, updateQRInput=False):
-		self.autoScale()
-		# Hack-job alert :(
-		# QtWebEngine cannot access page elements...
-		# But it can run arbirtary javascript!
-		js = '''
-			var el = document.getElementById("%s");
-			if(el) el.firstChild.textContent = "%s";
-		'''
+		try:
+			self.qrTimer.stop()
+			self.autoScale()
+			# Hack-job alert :(
+			# QtWebEngine cannot access page elements...
+			# But it can run arbirtary javascript!
+			js = '''
+				var el = document.getElementById("%s");
+				if(el) el.firstChild.textContent = "%s";
+			'''
 
-		def update(id, value):
-			self.mainWindow.preview.page().runJavaScript(js % (id, value))
-		
-		update('firstName', self.mainWindow.firstName.text())
-		update('lastName', self.mainWindow.lastName.text())
-		update('title', self.mainWindow.title.text())
+			def update(id, value):
+				self.mainWindow.preview.page().runJavaScript(js % (id, value))
+			
+			update('firstName', self.mainWindow.firstName.text())
+			update('lastName', self.mainWindow.lastName.text())
+			update('title', self.mainWindow.title.text())
 
-		if updateQRInput:
-			nameInputs = [
-				self.mainWindow.firstName.text().strip(),
-				self.mainWindow.lastName.text().strip(),
-			]
-			while '' in nameInputs:
-				nameInputs.remove('')
+			if updateQRInput:
+				nameInputs = [
+					self.mainWindow.firstName.text().strip(),
+					self.mainWindow.lastName.text().strip(),
+				]
+				while '' in nameInputs:
+					nameInputs.remove('')
 
-			for id, name in enumerate(nameInputs):
-				name = name.replace(' ', '_')
-				name = QtCore.QUrl.toPercentEncoding(name).data()
-				name = name.decode('utf-8')
-				nameInputs[id] = name
+				for id, name in enumerate(nameInputs):
+					name = name.replace(' ', '_')
+					name = QtCore.QUrl.toPercentEncoding(name).data()
+					name = name.decode('utf-8')
+					nameInputs[id] = name
 
-			name = '_'.join(nameInputs)
+				name = '_'.join(nameInputs)
 
-			if name == '':
-				self.mainWindow.qrInput.setText('http://makeict.org/')
-			else:
-				self.mainWindow.qrInput.setText('http://makeict.org/wiki/User:%s' % name)
+				if name == '':
+					self.mainWindow.qrInput.setText('http://makeict.org/')
+				else:
+					self.mainWindow.qrInput.setText('http://makeict.org/wiki/User:%s' % name)
 
+			self.qrTimer.start()
+		except Exception as exc:
+			unhandledError(exc, self.mainWindow)
+
+	def updateQRDisplay(self):
 		buffer = io.BytesIO()
 		qr = pyqrcode.create(self.mainWindow.qrInput.text())
 		qr.png(buffer, scale=10, quiet_zone=0)

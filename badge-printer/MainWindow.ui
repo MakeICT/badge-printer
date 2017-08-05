@@ -144,6 +144,9 @@
               <height>0</height>
              </size>
             </property>
+            <property name="text">
+             <string>http://makeict.org/</string>
+            </property>
            </widget>
           </item>
           <item>

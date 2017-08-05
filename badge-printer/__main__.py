@@ -10,6 +10,7 @@ from PyQt5 import QtWebEngineWidgets, QtPrintSupport, QtMultimediaWidgets
 from PyQt5 import QtMultimedia
 
 import pyqrcode
+import webbrowser
 
 CHOOSE_CUSTOM = object()
 RELOAD = object()
@@ -46,6 +47,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.actionAbout.triggered.connect(self.showAppInfo)
 
 		self.mainWindow.actionExit.triggered.connect(self.exit)
+		self.mainWindow.testQR.clicked.connect(self.testQR)
 
 		self.reloadTemplates()
 
@@ -106,6 +108,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
+	def testQR(self):
+		webbrowser.open(self.mainWindow.qrInput.text())
+	
 	def saveACopy(self, filename=False):
 		try:
 			if not isinstance(filename, str):

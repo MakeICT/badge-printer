@@ -248,7 +248,6 @@ class BadgePrinterApp(QtWidgets.QApplication):
 	def loadTemplate(self, filename):
 		try:
 			filename = os.path.join('templates', filename)
-			print(filename)
 			self.templateFilename = filename
 
 			self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath(filename)))

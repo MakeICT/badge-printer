@@ -149,21 +149,30 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 				try:
 					if self.camera is None:
-						cameraInfo = QtMultimedia.QCameraInfo.availableCameras()[0]
-						self.camera = QtMultimedia.QCamera(cameraInfo)
-						self.camera.viewfinderSettings().setResolution(640,480)
-						self.camera.setViewfinder(self.cameraViewFinder)
-						self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
+						availableCameras = QtMultimedia.QCameraInfo.availableCameras()
+						if len(availableCameras) == 0:
+							self._showError('No cameras available. Are you sure it\'s plugged in?')
+							tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
 
-						def statusChanged(status):
-							if status == QtMultimedia.QCamera.ActiveStatus:
-								tabs.setCurrentWidget(self.mainWindow.cameraTab)
+							return
+						else:
+							cameraInfo = availableCameras[0]
+							self.camera = QtMultimedia.QCamera(cameraInfo)
+							self.camera.viewfinderSettings().setResolution(640,480)
+							self.camera.setViewfinder(self.cameraViewFinder)
+							self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
 
-						self.camera.statusChanged.connect(statusChanged)
+							def statusChanged(status):
+								if status == QtMultimedia.QCamera.ActiveStatus:
+									tabs.setCurrentWidget(self.mainWindow.cameraTab)
+
+							self.camera.statusChanged.connect(statusChanged)
 					self.camera.start()
 				except Exception as exc:
-					self._showError('Failed to initialize camera. Are you sure it\'s plugged in?')
+					print(exc)
+					self._showError('Failed to initialize camera. :(')
 					tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
+					return
 
 			elif tabs.currentWidget() == self.mainWindow.cameraTab:
 				def imageSaved(id, filename):
@@ -254,16 +263,22 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 	def loadTemplate(self, filename):
 		try:
+			self.mainWindow.preview.hide()
+
 			filename = os.path.join('templates', filename)
 			self.templateFilename = filename
 
 			self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath(filename)))
+
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
 	def _contentLoaded(self):
 		self._updatePreview(False)
 		self.autoScale()
+		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
+			self.useImage(os.path.join('archive', '_capture.jpg'))
+		self.mainWindow.preview.show()
 
 	def autoScale(self):
 		preview = self.mainWindow.preview
@@ -398,3 +413,10 @@ if __name__ == '__main__':
 		app.doItNowDoItGood()
 	except Exception as exc:
 		unhandledError(exc)
+
+	try:
+		# clean up
+		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
+			os.remove(os.path.join('archive', '_capture.jpg'))
+	except:
+		pass

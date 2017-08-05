@@ -11,8 +11,6 @@ from PyQt5 import QtMultimedia
 
 import pyqrcode
 
-#d V4L2
-
 CHOOSE_CUSTOM = object()
 RELOAD = object()
 
@@ -45,6 +43,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.mainWindow.actionCapture.triggered.connect(self.captureToggle)
 		self.mainWindow.actionPrint.triggered.connect(self.attemptPrint)
+		self.mainWindow.actionAbout.triggered.connect(self.showAppInfo)
 
 		self.mainWindow.actionExit.triggered.connect(self.exit)
 
@@ -64,9 +63,20 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.title.textChanged.connect(textFieldUpdated)
 		self.mainWindow.qrInput.textChanged.connect(textFieldUpdated)
 
+
 	def doItNowDoItGood(self):
 		self.mainWindow.showNormal()
 		self.exec_()
+
+	def showAppInfo(self):
+		QtWidgets.QMessageBox.about(
+			self.mainWindow,
+			'MakeICT Badge Printer',
+			'<p>This app was writting by <a href="http://greenlightgo.org">Dominic Canare</a> for MakeICT.</p>' + 
+			'<p>Use, modification, and redistribution of this application is allowed under the terms of the <a href="https://www.gnu.org/licenses/gpl-3.0.en.html">GNU General Public License</a>.</p>' +
+			'<p>For more information, visit <a href="http://github.com/makeict/badge-printer">this project\'s GitHub page</a>.</p>' +
+			'<p>For more immediate help, send an email to <a href="it@makeict.org">it@makeict.org</a>.</p>'
+		)
 
 	def _path(self, *paths):
 		return os.path.join(self.basePath, *paths)

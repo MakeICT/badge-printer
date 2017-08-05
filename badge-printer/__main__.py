@@ -144,22 +144,26 @@ class BadgePrinterApp(QtWidgets.QApplication):
 	def captureToggle(self):
 		try:
 			tabs = self.mainWindow.previewTabs
-			if tabs.currentWidget() == self.mainWindow.badgePreviewTab:
+			if tabs.currentWidget() != self.mainWindow.cameraTab:
 				tabs.setCurrentWidget(self.mainWindow.waitTab)
 
-				if self.camera is None:
-					cameraInfo = QtMultimedia.QCameraInfo.availableCameras()[0]
-					self.camera = QtMultimedia.QCamera(cameraInfo)
-					self.camera.viewfinderSettings().setResolution(640,480)
-					self.camera.setViewfinder(self.cameraViewFinder)
-					self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
+				try:
+					if self.camera is None:
+						cameraInfo = QtMultimedia.QCameraInfo.availableCameras()[0]
+						self.camera = QtMultimedia.QCamera(cameraInfo)
+						self.camera.viewfinderSettings().setResolution(640,480)
+						self.camera.setViewfinder(self.cameraViewFinder)
+						self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
 
-					def statusChanged(status):
-						if status == QtMultimedia.QCamera.ActiveStatus:
-							tabs.setCurrentWidget(self.mainWindow.cameraTab)
+						def statusChanged(status):
+							if status == QtMultimedia.QCamera.ActiveStatus:
+								tabs.setCurrentWidget(self.mainWindow.cameraTab)
 
-					self.camera.statusChanged.connect(statusChanged)
-				self.camera.start()
+						self.camera.statusChanged.connect(statusChanged)
+					self.camera.start()
+				except Exception as exc:
+					self._showError('Failed to initialize camera. Are you sure it\'s plugged in?')
+					tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
 
 			elif tabs.currentWidget() == self.mainWindow.cameraTab:
 				def imageSaved(id, filename):
@@ -229,14 +233,17 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			combobox = self.mainWindow.templateSelector
 			combobox.clear()
 			templates = []
-			for filename in os.listdir('templates'):
-				if filename[-4:].lower() == '.svg':
-					templates.append(filename)
-			templates.sort()
-			combobox.addItems(templates)
+			try:
+				for filename in os.listdir('templates'):
+					if filename[-4:].lower() == '.svg':
+						templates.append(filename)
+				templates.sort()
+				combobox.addItems(templates)
 
-			combobox.setCurrentIndex(combobox.count()-1)
-			self.loadTemplate(combobox.currentText())
+				combobox.setCurrentIndex(combobox.count()-1)
+				self.loadTemplate(combobox.currentText())
+			except:
+				self._showError('Failed to load templates from %s' % os.path.abspath('templates'))
 
 			combobox.insertSeparator(len(templates))
 			combobox.addItem('✎ Choose custom...', CHOOSE_CUSTOM)
@@ -360,6 +367,10 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			if(el) el.setAttribute("xlink:href", "%s");
 		'''
 		self.mainWindow.preview.page().runJavaScript(js % (id, data), goToPreview)
+
+	def _showError(self, msg):
+		QtWidgets.QMessageBox.warning(self.mainWindow, 'MakeICT Badge Printer', msg)
+
 
 def unhandledError(exc, parent=None):
 	dialog = QtWidgets.QMessageBox(parent)

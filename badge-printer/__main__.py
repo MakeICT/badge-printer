@@ -20,8 +20,13 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		super().__init__(args)
 		self.basePath = os.path.dirname(os.path.realpath(__file__))
 		self.templateFilename = None
+		self.cameraInfo = None
 		self.camera = None
-		
+
+		# Switch cameras causes a crash when the old camera object is garbage collected
+		# This list keeps all cameras in memory
+		self.cameraCollection = []
+
 		self.qrTimer = QtCore.QTimer()
 		self.qrTimer.setSingleShot(True)
 		self.qrTimer.setInterval(3000)
@@ -30,8 +35,13 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow = uic.loadUi(self._path('MainWindow.ui'))
 		self.mainWindow.previewTabs.tabBar().hide()
 		
+		# The viewfinder isn't available in Qt Designer :(
 		self.cameraViewFinder = QtMultimediaWidgets.QCameraViewfinder(self.mainWindow.cameraTab)
+		# we want the cancel button under the viewfinder
+		cancelButton = self.mainWindow.cameraTab.layout().takeAt(0).widget()
 		self.mainWindow.cameraTab.layout().addWidget(self.cameraViewFinder)
+		self.mainWindow.cameraTab.layout().addWidget(cancelButton)
+
 
 		preview = self.mainWindow.preview
 		preview.page().setBackgroundColor(
@@ -48,13 +58,11 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.mainWindow.actionExit.triggered.connect(self.exit)
 		self.mainWindow.testQR.clicked.connect(self.testQR)
-
-		self.reloadTemplates()
+		self.mainWindow.cancelCapture.clicked.connect(self.cancelCapture)
 
 		self.mainWindow.templateSelector.currentIndexChanged.connect(self._templateSelected)
 		
 		self.mainWindow.preview.installEventFilter(self)
-
 		self.mainWindow.preview.loadFinished.connect(self._contentLoaded)
 
 		def textFieldUpdated(text, updateQrInput=False):
@@ -67,6 +75,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 
 	def doItNowDoItGood(self):
+		self.reloadTemplates()
+		self.refreshCameras()
+
 		self.mainWindow.showNormal()
 		self.exec_()
 
@@ -149,24 +160,21 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 				try:
 					if self.camera is None:
-						availableCameras = QtMultimedia.QCameraInfo.availableCameras()
-						if len(availableCameras) == 0:
-							self._showError('No cameras available. Are you sure it\'s plugged in?')
+						if self.cameraInfo is None:
+							self._showError('No camera selected!')
 							tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
-
 							return
-						else:
-							cameraInfo = availableCameras[0]
-							self.camera = QtMultimedia.QCamera(cameraInfo)
-							self.camera.viewfinderSettings().setResolution(640,480)
-							self.camera.setViewfinder(self.cameraViewFinder)
-							self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
 
-							def statusChanged(status):
-								if status == QtMultimedia.QCamera.ActiveStatus:
-									tabs.setCurrentWidget(self.mainWindow.cameraTab)
+						self.camera = QtMultimedia.QCamera(self.cameraInfo)
+						self.camera.viewfinderSettings().setResolution(640,480)
+						self.camera.setViewfinder(self.cameraViewFinder)
+						self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
 
-							self.camera.statusChanged.connect(statusChanged)
+						def statusChanged(status):
+							if status == QtMultimedia.QCamera.ActiveStatus:
+								tabs.setCurrentWidget(self.mainWindow.cameraTab)
+
+						self.camera.statusChanged.connect(statusChanged)
 					self.camera.start()
 				except Exception as exc:
 					print(exc)
@@ -382,6 +390,60 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			if(el) el.setAttribute("xlink:href", "%s");
 		'''
 		self.mainWindow.preview.page().runJavaScript(js % (id, data), goToPreview)
+
+	def refreshCameras(self):
+		self.mainWindow.menuCameras.clear()
+
+		oldCameraInfo = self.cameraInfo
+		self.cameraInfo = None
+		availableCameras = QtMultimedia.QCameraInfo.availableCameras()
+		if len(availableCameras) == 0:
+			self._showError('No cameras available. Are you sure it\'s plugged in?')
+		else:
+			cameraActionGroup = QtWidgets.QActionGroup(self)
+
+			for cameraInfo in availableCameras:
+				action = QtWidgets.QAction(
+					'%s (%s)' % (cameraInfo.description(), cameraInfo.deviceName()),
+					self.mainWindow.menuCameras
+				)
+				action.setCheckable(True)
+				action.triggered.connect(partial(self.setCamera, cameraInfo))
+
+				if self.cameraInfo is None:
+					if oldCameraInfo is None or oldCameraInfo.deviceName() == cameraInfo.deviceName():
+						action.setChecked(True)
+						self.cameraInfo = cameraInfo
+
+				self.mainWindow.menuCameras.addAction(action)
+				cameraActionGroup.addAction(action)
+
+		self.mainWindow.menuCameras.addSeparator()
+		actionRefreshCameras = QtWidgets.QAction('⟳ &Refresh', self.mainWindow.menuCameras)
+		self.mainWindow.menuCameras.addAction(actionRefreshCameras)
+		actionRefreshCameras.triggered.connect(self.refreshCameras)
+
+	def cancelCapture(self):
+		self.camera.stop()
+		self.mainWindow.previewTabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
+	
+	def setCamera(self, cameraInfo):
+		takingPic = self.mainWindow.previewTabs.currentWidget() != self.mainWindow.badgePreviewTab
+
+		if takingPic:
+			self.cancelCapture()
+
+		if self.camera is not None:
+			self.cameraCollection.append(self.camera)
+			self.camera.setViewfinder(None)
+			self.camera = None
+			self.cameraViewFinder.setMediaObject(None)
+
+		self.cameraInfo = cameraInfo
+
+		if takingPic:
+			self.captureToggle()
+
 
 	def _showError(self, msg):
 		QtWidgets.QMessageBox.warning(self.mainWindow, 'MakeICT Badge Printer', msg)

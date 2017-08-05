@@ -118,7 +118,7 @@
        y="-233.1209"
        x="57.655567"
        id="photo"
-       preserveAspectRatio="none"
+       preserveAspectRatio="xMidYMid slice"
        height="391.85428"
        width="522.47241"
        style="stroke-width:1.33333337"

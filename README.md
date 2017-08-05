@@ -31,8 +31,8 @@ $ python3 badge-printer
 
 ### Templates
 Templates must be SVG, and it's only been tested with Inkscape SVG's. The following embedded image fields are supported:
-* `<image id="photo">` - aspect ratio should match your camera
-* `<image id="qr">` - aspect ratio should be square
+* `<image id="photo">` - `preserveAspectRatio` attribute should be `xMidYMid slice`
+* `<image id="qr">` - `width` and `height` attributes should be square
 
 The following `<text>` fields are also supported:
 * `<text id="firstName">`

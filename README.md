@@ -15,7 +15,7 @@ The program captures images from a webcam and personal information for use with 
 
 Install the following dependencies:
 * `gstreamer1.0-plugins-bad`
-* `libqt5multimedia-plugins`
+* `libqt5multimedia5-plugins`
 * `pyqt5`, including:
 	* `QtWebEngine`
 	* `QtMultimedia`

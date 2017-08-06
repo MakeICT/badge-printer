@@ -214,7 +214,6 @@
      <string>&amp;File</string>
     </property>
     <addaction name="actionLoadTemplate"/>
-    <addaction name="actionImport"/>
     <addaction name="actionSaveACopy"/>
     <addaction name="separator"/>
     <addaction name="actionCapture"/>
@@ -285,17 +284,6 @@
     <string>Ctrl+L</string>
    </property>
   </action>
-  <action name="actionImport">
-   <property name="text">
-    <string>&amp;Import info from SVG...</string>
-   </property>
-   <property name="toolTip">
-    <string>Attempt to load details from a saved SVG</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+I</string>
-   </property>
-  </action>
   <action name="actionAbout">
    <property name="text">
     <string>&amp;About...</string>
@@ -304,11 +292,6 @@
   <action name="actionRefreshCameras">
    <property name="text">
     <string>⟳ &amp;Refresh</string>
-   </property>
-  </action>
-  <action name="actionShow_unnamed_text_elements">
-   <property name="text">
-    <string>Show unnamed text elements</string>
    </property>
   </action>
  </widget>

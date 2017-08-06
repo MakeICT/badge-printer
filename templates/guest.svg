@@ -36,8 +36,8 @@
      units="px"
      showgrid="false"
      inkscape:document-units="in"
-     inkscape:cy="460.19006"
-     inkscape:cx="120.38961"
+     inkscape:cy="469.13665"
+     inkscape:cx="489.43632"
      inkscape:zoom="0.89419574"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
@@ -112,19 +112,7 @@
        y="-654.0097"
        x="415.96274"
        id="image1118"
-       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyAQAAAADAX2ykAAACWElEQVR4nO2ZUY6GMAiESTyAR/Lq
-/5E8gAlrYYa22ew+L5vhoVH86oswBTSDHe6fd7HL/V1us7iF77ZvJr4JPwD3+3Xb+dh7NXx37Hx4
-9S5h4hvyBQwe335cVYzgbXaIb81HZESC507Gg/h/xCPfQ893NRDfk5+ejALe1qH9m/6L/+s8DO4f
-Fvtm4nvwPu0TjlGUQdSHb8ZIIuK78fcB9Lq3AiyoT22KYBDfjU8bz7ZWeSxBnREH7KxMfDd+lNUZ
-FL4c0IZCDelvxqJMfDf+xqaw+PbbeORAPKCHFt+Nj4QOKa8ueWQ5eH842URkiG/FQ6zd2RGHgGeB
-faxHNfJdfDuefXBlfpVdVPthWYOLb8ZnAZabTneWXZX+8fRGeRb6IL4VvyQ4PZiCeNTgz/ZK8c14
-AJHlwUeDTB+FYP6UEN+Ln0c1uuRMdcZIxcPSL4tvxE+3Z22dAxCvyZftgSK+Gb9U1IyMTcUx6gre
-THwzHmLtHGWGbF/sp5Z6bM67xHfi7ax+ahmFwEeNt6n/4nvxVyr2lupr5W3GyVfoufhmfH12RsGx
-LDUFyafi2/GZ0annvs5D1i6KNRpfLb4Nz3kIuyhsZz2W8XDybeK78US3ArsyH91WBgX+N4nvxOMw
-Zm6jQQ7U548os/mjQnwn3susbIYHOmefNbj4XjyNBZjX5Dq7ZN/OcPHt+Ct897p5zjgZFJ56Lr4h
-zxN5RkFu+sz22Wzqv/iufNoSAJ78Lvnim/L44udTt04V507xDfmMgvqjtI+vZ75zPia+Fw9jK4V+
-Ch9+LpXv4jvxX1blTvxQmbu3AAAAAElFTkSuQmCC
-"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAXIAAAFyAQAAAADAX2ykAAACWElEQVR4nO2ZUY6GMAiESTyAR/Lq /5E8gAlrYYa22ew+L5vhoVH86oswBTSDHe6fd7HL/V1us7iF77ZvJr4JPwD3+3Xb+dh7NXx37Hx4 9S5h4hvyBQwe335cVYzgbXaIb81HZESC507Gg/h/xCPfQ893NRDfk5+ejALe1qH9m/6L/+s8DO4f Fvtm4nvwPu0TjlGUQdSHb8ZIIuK78fcB9Lq3AiyoT22KYBDfjU8bz7ZWeSxBnREH7KxMfDd+lNUZ FL4c0IZCDelvxqJMfDf+xqaw+PbbeORAPKCHFt+Nj4QOKa8ueWQ5eH842URkiG/FQ6zd2RGHgGeB faxHNfJdfDuefXBlfpVdVPthWYOLb8ZnAZabTneWXZX+8fRGeRb6IL4VvyQ4PZiCeNTgz/ZK8c14 AJHlwUeDTB+FYP6UEN+Ln0c1uuRMdcZIxcPSL4tvxE+3Z22dAxCvyZftgSK+Gb9U1IyMTcUx6gre THwzHmLtHGWGbF/sp5Z6bM67xHfi7ax+ahmFwEeNt6n/4nvxVyr2lupr5W3GyVfoufhmfH12RsGx LDUFyafi2/GZ0annvs5D1i6KNRpfLb4Nz3kIuyhsZz2W8XDybeK78US3ArsyH91WBgX+N4nvxOMw Zm6jQQ7U548os/mjQnwn3susbIYHOmefNbj4XjyNBZjX5Dq7ZN/OcPHt+Ct897p5zjgZFJ56Lr4h zxN5RkFu+sz22Wzqv/iufNoSAJ78Lvnim/L44udTt04V507xDfmMgvqjtI+vZ75zPia+Fw9jK4V+ Ch9+LpXv4jvxX1blTvxQmbu3AAAAAElFTkSuQmCC "
        preserveAspectRatio="none"
        height="192.08543"
        width="192.08543" />
@@ -133,7 +121,7 @@ Ch9+LpXv4jvxX1blTvxQmbu3AAAAAElFTkSuQmCC
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.80653px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.06708133"
        x="317.09506"
        y="-352.14261"
-       id="firstName"
+       id="First name"
        transform="scale(1.0009195,0.99908135)"><tspan
          sodipodi:role="line"
          id="tspan3833"
@@ -145,7 +133,7 @@ Ch9+LpXv4jvxX1blTvxQmbu3AAAAAElFTkSuQmCC
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.80653px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.06708133"
        x="317.45853"
        y="-279.79718"
-       id="lastName"
+       id="Last name"
        transform="scale(1.0009195,0.99908135)"><tspan
          sodipodi:role="line"
          id="tspan3841"
@@ -157,7 +145,6 @@ Ch9+LpXv4jvxX1blTvxQmbu3AAAAAElFTkSuQmCC
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.81703568px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.06708133"
        x="318.38809"
        y="237.68526"
-       id="text3847-5"
        transform="scale(1.0006553,0.99934514)"><tspan
          sodipodi:role="line"
          x="318.38809"
@@ -167,16 +154,16 @@ Ch9+LpXv4jvxX1blTvxQmbu3AAAAAElFTkSuQmCC
     <text
        title="text1382"
        transform="scale(1.0006553,0.99934514)"
-       id="title"
+       id="Guest of"
        y="290.83371"
        x="319.11392"
-       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.81703568px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.06708133;"
+       style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.81703568px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;display:inline;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.06708133"
        xml:space="preserve"><tspan
          id="tspan1380"
-         style="font-size:46.45320892px;line-height:1.25;fill:#000000;fill-opacity:1;stroke-width:1.06708133;"
+         style="font-size:46.45320892px;line-height:1.25;fill:#000000;fill-opacity:1;stroke-width:1.06708133"
          y="290.83371"
          x="319.11392"
-         sodipodi:role="line">Title</tspan></text>
+         sodipodi:role="line">Host member or event name</tspan></text>
     <g
        style="display:inline;stroke-width:0.92698854"
        transform="matrix(1.1037018,0,0,1.1037018,1716.9425,-3043.9033)"

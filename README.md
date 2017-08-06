@@ -35,10 +35,9 @@ Templates must be SVG, and it's only been tested with Inkscape SVG's. The follow
 * `<image id="photo">` - `preserveAspectRatio` attribute should be `xMidYMid slice`
 * `<image id="qr">` - `width` and `height` attributes should be square
 
-The following `<text>` fields are also supported:
-* `<text id="firstName">`
-* `<text id="lastName">`
-* `<text id="title">`
+The program will recognize `<text>` fields with an `id` set. These will appear in the form and be editable.
+
+Note: this probably isn't the best way to do this. Maybe a custom namespace?
 
 ## Support
 

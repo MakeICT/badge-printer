@@ -22,6 +22,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.templateFilename = None
 		self.cameraInfo = None
 		self.camera = None
+		self.templateElements = []
+		self.nameInputs = []
 
 		# Switch cameras causes a crash when the old camera object is garbage collected
 		# This list keeps all cameras in memory
@@ -29,7 +31,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.qrTimer = QtCore.QTimer()
 		self.qrTimer.setSingleShot(True)
-		self.qrTimer.setInterval(3000)
+		self.qrTimer.setInterval(1000)
 		self.qrTimer.timeout.connect(self.updateQRDisplay)
 
 		self.mainWindow = uic.loadUi(self._path('MainWindow.ui'))
@@ -65,14 +67,10 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.preview.installEventFilter(self)
 		self.mainWindow.preview.loadFinished.connect(self._contentLoaded)
 
-		def textFieldUpdated(text, updateQrInput=False):
-			self._updatePreview(updateQrInput)
-		
-		self.mainWindow.firstName.textChanged.connect(partial(self._updatePreview, True))
-		self.mainWindow.lastName.textChanged.connect(partial(self._updatePreview, True))
-		self.mainWindow.title.textChanged.connect(textFieldUpdated)
-		self.mainWindow.qrInput.textChanged.connect(textFieldUpdated)
+		def updatePreviewWithoutQR(qrInputText):
+			self._updatePreview(False)
 
+		self.mainWindow.qrInput.textChanged.connect(updatePreviewWithoutQR)
 
 	def doItNowDoItGood(self):
 		self.reloadTemplates()
@@ -232,10 +230,16 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
-	def makeFileFriendlyName(self):
-		name = '%s_%s' % (self.mainWindow.firstName.text(), self.mainWindow.lastName.text())
-		if name == '_':
+	def makeFileFriendlyName(self, replaceBlankWithAnonymous=True):
+		names = []
+		for w in self.nameInputs:
+			if w.text() != '':
+				names.append(w.text().replace(' ', '_'))
+
+		name = '_'.join(names)
+		if replaceBlankWithAnonymous and name == '':
 			name = 'Anonymous_McNameface'
+
 		return name
 
 	def exit(self):
@@ -281,12 +285,74 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		except Exception as exc:
 			unhandledError(exc, self.mainWindow)
 
+	# this runs whenever the SVG preview is loaded (including blank loads)
 	def _contentLoaded(self):
+		def addElements(elements):
+			try:
+				# Remove boring, old, template-specific widgets from the form
+				rememberedValues = {}
+				for rowID in range(self.mainWindow.formLayout.rowCount()-1, 3, -1):
+					layoutItem = self.mainWindow.formLayout.itemAt(
+						rowID,
+						QtWidgets.QFormLayout.FieldRole
+					)
+					if layoutItem is not None:
+						widget = layoutItem.widget()
+						if widget in self.templateElements:
+							label = self.mainWindow.formLayout.labelForField(widget)
+							rememberedValues[label.text()] = widget.text()
+							label.deleteLater()
+							widget.deleteLater()
+			
+				self.nameInputs = []
+
+				# add new and exciting template-specific widgets to the form
+				self.templateElements = []
+				for element in elements:
+					isFirstName = element['id'].lower() == 'first name'
+					isLastName = element['id'].lower() == 'last name'
+
+					widget = QtWidgets.QLineEdit(self.mainWindow)
+					if element['id'] in rememberedValues:
+						widget.setText(rememberedValues[element['id']])
+					else:
+						widget.setText(element['value'])
+
+					widget.textChanged.connect(partial(self.textFieldUpdated, isFirstName or isLastName))
+
+					self.templateElements.append(widget)
+					self.mainWindow.formLayout.addRow(element['id'], widget)
+
+					if isFirstName:
+						self.nameInputs.insert(0, widget)
+					elif isLastName:
+						self.nameInputs.append(widget)
+
+			except Exception as exc:
+				unhandledError(exc, self.mainWindow)
+
+		js = '''
+			var collection = document.getElementsByTagName("text");
+			var result = [];
+			for(var i=0; i<collection.length; i++){
+				if(collection[i].id){
+					result.push({
+						"id": collection[i].id,
+						"value": collection[i].textContent
+					});
+				}
+			}
+			result;'''
+		self.mainWindow.preview.page().runJavaScript(js, addElements)
+
 		self._updatePreview(False)
 		self.autoScale()
 		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
 			self.useImage(os.path.join('archive', '_capture.jpg'))
 		self.mainWindow.preview.show()
+
+
+		self.mainWindow.preview.page()
 
 	def autoScale(self):
 		preview = self.mainWindow.preview
@@ -329,7 +395,10 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		return super().eventFilter(obj, event)
 
-	def _updatePreview(self, updateQRInput=False):
+	def textFieldUpdated(self, value):
+		self._updatePreview(True)
+
+	def _updatePreview(self, updateQRInput):
 		try:
 			self.qrTimer.stop()
 			self.autoScale()
@@ -344,26 +413,12 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			def update(id, value):
 				self.mainWindow.preview.page().runJavaScript(js % (id, value))
 			
-			update('firstName', self.mainWindow.firstName.text())
-			update('lastName', self.mainWindow.lastName.text())
-			update('title', self.mainWindow.title.text())
+			for widget in self.templateElements:
+				id = self.mainWindow.formLayout.labelForField(widget).text()
+				update(id, widget.text())
 
-			if updateQRInput:
-				nameInputs = [
-					self.mainWindow.firstName.text().strip(),
-					self.mainWindow.lastName.text().strip(),
-				]
-				while '' in nameInputs:
-					nameInputs.remove('')
-
-				for id, name in enumerate(nameInputs):
-					name = name.replace(' ', '_')
-					name = QtCore.QUrl.toPercentEncoding(name).data()
-					name = name.decode('utf-8')
-					nameInputs[id] = name
-
-				name = '_'.join(nameInputs)
-
+			if updateQRInput != False:
+				name = QtCore.QUrl.toPercentEncoding(self.makeFileFriendlyName(False)).data().decode('utf-8')
 				if name == '':
 					self.mainWindow.qrInput.setText('http://makeict.org/')
 				else:

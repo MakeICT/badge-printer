@@ -30,14 +30,14 @@
      inkscape:snap-page="true"
      inkscape:window-maximized="1"
      inkscape:window-y="0"
-     inkscape:window-x="38"
-     inkscape:window-height="1080"
-     inkscape:window-width="1882"
+     inkscape:window-x="44"
+     inkscape:window-height="1051"
+     inkscape:window-width="1876"
      units="px"
      showgrid="false"
      inkscape:document-units="in"
      inkscape:cy="504.923"
-     inkscape:cx="318.89201"
+     inkscape:cx="119.27129"
      inkscape:zoom="0.89419574"
      inkscape:pageshadow="2"
      inkscape:pageopacity="0.0"
@@ -104,7 +104,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -134,7 +134,7 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.80653px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.06708133"
        x="317.09506"
        y="-352.14261"
-       id="firstName"
+       id="First name"
        transform="scale(1.0009195,0.99908135)"><tspan
          sodipodi:role="line"
          id="tspan3833"
@@ -146,7 +146,7 @@
        style="font-style:normal;font-variant:normal;font-weight:normal;font-stretch:normal;font-size:39.80653px;line-height:0%;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1.06708133"
        x="317.45853"
        y="-279.79718"
-       id="lastName"
+       id="Last name"
        transform="scale(1.0009195,0.99908135)"><tspan
          sodipodi:role="line"
          id="tspan3841"
@@ -242,16 +242,7 @@
        y="-654.0097"
        x="415.96274"
        id="qr"
-       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQAAAAB1xeIbAAABlklEQVR4nO2ZQY4EIQhFSTyAR6qr
-e6Q6QCVMCx+0UzM7mdX/C9Pq694Q4EuLQE11xCeR/ohct7xE6ih16dTdNPQIljgjVUbdtnziMvnP
-MoMTFAJGqpwKVEdXbEn9C/W5ezJZ5K8IkTpJZWWaFABFhH6pX6TOUVBmx7bIS6ROUrrJ8yS/lOeD
-VBUF1+mVyTypbkAjVUbN7qvwn+pPAb+b8tQgVUN5cJbjv2zJLu3tglQRlXeuGTDPk75dkKqgUh4i
-yw6YUFSrGEmQOkypdQWMedL2W7XaLBGpEso7wO3FPwY+Gm8xeweTqqG8AElHRxZZzbhHsgxSNZQH
-QqIeeTP24DyrfpEqoe6Wjbe57V9GKM5IlVAmoHiBRbI8sioTqQoqTt6znn1LqooaGZexp8MmUucp
-TYmELxIPzlatSFVQoXgArOzImTOpKuqy8Nim59zTKIVFjQ2p41RM1zDmSQq/EU6UVCWVnhSFalki
-UsUU2rLkAyAC9pUdpE5SWZnw5JrqmDwI2gWpEgpqiv+5jNecQsfoh9Rx6ge+5q+YK40itgAAAABJ
-RU5ErkJggg==
-"
+       xlink:href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASIAAAEiAQAAAAB1xeIbAAABlklEQVR4nO2ZQY4EIQhFSTyAR6qr e6Q6QCVMCx+0UzM7mdX/C9Pq694Q4EuLQE11xCeR/ohct7xE6ih16dTdNPQIljgjVUbdtnziMvnP MoMTFAJGqpwKVEdXbEn9C/W5ezJZ5K8IkTpJZWWaFABFhH6pX6TOUVBmx7bIS6ROUrrJ8yS/lOeD VBUF1+mVyTypbkAjVUbN7qvwn+pPAb+b8tQgVUN5cJbjv2zJLu3tglQRlXeuGTDPk75dkKqgUh4i yw6YUFSrGEmQOkypdQWMedL2W7XaLBGpEso7wO3FPwY+Gm8xeweTqqG8AElHRxZZzbhHsgxSNZQH QqIeeTP24DyrfpEqoe6Wjbe57V9GKM5IlVAmoHiBRbI8sioTqQoqTt6znn1LqooaGZexp8MmUucp TYmELxIPzlatSFVQoXgArOzImTOpKuqy8Nim59zTKIVFjQ2p41RM1zDmSQq/EU6UVCWVnhSFalki UsUU2rLkAyAC9pUdpE5SWZnw5JrqmDwI2gWpEgpqiv+5jNecQsfoh9Rx6ge+5q+YK40itgAAAABJ RU5ErkJggg== "
        style="image-rendering:optimizeSpeed"
        preserveAspectRatio="none"
        height="192.08543"

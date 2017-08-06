@@ -122,33 +122,13 @@
          </widget>
         </item>
         <item row="2" column="0">
-         <widget class="QLabel" name="label">
-          <property name="text">
-           <string>First Name</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <widget class="QLineEdit" name="firstName"/>
-        </item>
-        <item row="3" column="0">
-         <widget class="QLabel" name="label_2">
-          <property name="text">
-           <string>Last Name</string>
-          </property>
-         </widget>
-        </item>
-        <item row="3" column="1">
-         <widget class="QLineEdit" name="lastName"/>
-        </item>
-        <item row="4" column="0">
          <widget class="QLabel" name="label_4">
           <property name="text">
            <string>QR</string>
           </property>
          </widget>
         </item>
-        <item row="4" column="1">
+        <item row="2" column="1">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <item>
            <widget class="QLineEdit" name="qrInput">
@@ -181,22 +161,12 @@
           </item>
          </layout>
         </item>
-        <item row="5" column="1">
+        <item row="3" column="1">
          <widget class="Line" name="line_4">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
           </property>
          </widget>
-        </item>
-        <item row="6" column="0">
-         <widget class="QLabel" name="label_5">
-          <property name="text">
-           <string>Title</string>
-          </property>
-         </widget>
-        </item>
-        <item row="6" column="1">
-         <widget class="QLineEdit" name="title"/>
         </item>
        </layout>
       </item>
@@ -334,6 +304,11 @@
   <action name="actionRefreshCameras">
    <property name="text">
     <string>⟳ &amp;Refresh</string>
+   </property>
+  </action>
+  <action name="actionShow_unnamed_text_elements">
+   <property name="text">
+    <string>Show unnamed text elements</string>
    </property>
   </action>
  </widget>

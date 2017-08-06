@@ -87,6 +87,9 @@
          <number>0</number>
         </property>
         <item>
+         <widget class="QCameraViewfinder" name="cameraViewFinder" native="true"/>
+        </item>
+        <item>
          <widget class="QPushButton" name="cancelCapture">
           <property name="text">
            <string>⊘ Cancel capture</string>
@@ -300,6 +303,12 @@
    <class>QWebEngineView</class>
    <extends>QWidget</extends>
    <header>QtWebEngine/QWebEngineView</header>
+  </customwidget>
+  <customwidget>
+   <class>QCameraViewfinder</class>
+   <extends>QWidget</extends>
+   <header>PyQt5/QtMultimediaWidgets</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources/>

@@ -37,12 +37,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow = uic.loadUi(self._path('MainWindow.ui'))
 		self.mainWindow.previewTabs.tabBar().hide()
 		
-		# The viewfinder isn't available in Qt Designer :(
-		self.cameraViewFinder = QtMultimediaWidgets.QCameraViewfinder(self.mainWindow.cameraTab)
-		# we want the cancel button under the viewfinder
-		cancelButton = self.mainWindow.cameraTab.layout().takeAt(0).widget()
-		self.mainWindow.cameraTab.layout().addWidget(self.cameraViewFinder)
-		self.mainWindow.cameraTab.layout().addWidget(cancelButton)
+		self.mainWindow.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
 
 		preview = self.mainWindow.preview
 		preview.page().setBackgroundColor(
@@ -147,8 +142,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 					self.camera = QtMultimedia.QCamera(self.cameraInfo)
 					self.camera.viewfinderSettings().setResolution(640,480)
-					self.camera.setViewfinder(self.cameraViewFinder)
-					self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
+					self.camera.setViewfinder(self.mainWindow.cameraViewFinder)
 
 					def statusChanged(status):
 						if status == QtMultimedia.QCamera.ActiveStatus:
@@ -446,7 +440,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.cameraCollection.append(self.camera)
 			self.camera.setViewfinder(None)
 			self.camera = None
-			self.cameraViewFinder.setMediaObject(None)
+			self.mainWindow.cameraViewFinder.setMediaObject(None)
 
 		self.cameraInfo = cameraInfo
 

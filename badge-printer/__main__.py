@@ -44,6 +44,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.mainWindow.actionCapture.triggered.connect(self.captureToggle)
 		self.mainWindow.actionPrint.triggered.connect(self.attemptPrint)
+		self.mainWindow.actionImportImage.triggered.connect(self.browseForImage)
 		self.mainWindow.actionAbout.triggered.connect(self.showAppInfo)
 
 		self.mainWindow.actionExit.triggered.connect(self.exit)
@@ -156,6 +157,11 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			tmpFile = os.path.abspath(os.path.join('archive', '_capture.jpg'))
 			self.imageCapture.capture(tmpFile)
 			self.camera.stop()
+
+	def browseForImage(self):
+		result = QtWidgets.QFileDialog.getOpenFileName(self.mainWindow, 'Open file', '.', 'JPEG images (*.jpg);;All files (*)')
+		if result[0] != '':
+			self.useImage(result[0])
 
 	def useImage(self, filename):
 		with open(filename, 'rb') as captureFile:
@@ -388,6 +394,7 @@ def handle_exception(parentWindow, excType, exc, tb):
 		dialog.setDetailedText(
 			'The details below can help troubleshoot the issue. Please copy-and-paste this in any report.\n\n' +
 			'Developer info at http://github.com/makeict/badge-printer\n\n' + 
+			'Exception: ' + str(exc) + '\n'
 			'%s' % ''.join(stack)
 		)
 		dialog.setModal(True)

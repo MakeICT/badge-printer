@@ -30,6 +30,9 @@
       <property name="usesScrollButtons">
        <bool>false</bool>
       </property>
+      <property name="tabBarAutoHide">
+       <bool>true</bool>
+      </property>
       <widget class="QWidget" name="badgePreviewTab">
        <attribute name="title">
         <string>Badge Preview</string>
@@ -226,6 +229,7 @@
     <addaction name="actionSaveACopy"/>
     <addaction name="separator"/>
     <addaction name="actionCapture"/>
+    <addaction name="actionImportImage"/>
     <addaction name="actionPrint"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
@@ -301,6 +305,14 @@
   <action name="actionRefreshCameras">
    <property name="text">
     <string>⟳ &amp;Refresh</string>
+   </property>
+  </action>
+  <action name="actionImportImage">
+   <property name="text">
+    <string>&amp;Import image...</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+I</string>
    </property>
   </action>
  </widget>

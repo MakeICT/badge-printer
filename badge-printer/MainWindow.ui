@@ -15,7 +15,7 @@
   </property>
   <property name="windowIcon">
    <iconset>
-    <normaloff>images/MakeICT-Logo-small.svg</normaloff>images/MakeICT-Logo-small.svg</iconset>
+    <normaloff>images/icon.svg</normaloff>images/icon.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,3">

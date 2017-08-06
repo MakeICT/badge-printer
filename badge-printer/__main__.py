@@ -44,13 +44,11 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.cameraTab.layout().addWidget(self.cameraViewFinder)
 		self.mainWindow.cameraTab.layout().addWidget(cancelButton)
 
-
 		preview = self.mainWindow.preview
 		preview.page().setBackgroundColor(
 			preview.palette().color(preview.backgroundRole())
 		)
 
-		self.mainWindow.actionImport.triggered.connect(self.attemptImport)
 		self.mainWindow.actionLoadTemplate.triggered.connect(self.browseForTemplate)
 		self.mainWindow.actionSaveACopy.triggered.connect(self.saveACopy)
 
@@ -93,142 +91,116 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		return os.path.join(self.basePath, *paths)
 
 	def _templateSelected(self, index):
-		try:
-			combobox = self.mainWindow.templateSelector
-			data = combobox.itemData(combobox.currentIndex())
+		combobox = self.mainWindow.templateSelector
+		data = combobox.itemData(combobox.currentIndex())
 
-			if data == CHOOSE_CUSTOM:
-				self.browseForTemplate()
-			elif data == RELOAD:
-				self.reloadTemplates()
-			else:
-				self.loadTemplate(combobox.currentText())
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+		if data == CHOOSE_CUSTOM:
+			self.browseForTemplate()
+		elif data == RELOAD:
+			self.reloadTemplates()
+		else:
+			self.loadTemplate(combobox.currentText())
 
 	def browseForTemplate(self):
 		result = QtWidgets.QFileDialog.getOpenFileName(self.mainWindow, 'Open file', '.', 'SVG Files (*.svg);;All files (*)')
 		if result[0] != '':
 			self.loadTemplate(result[0])
 
-	def attemptImport(self):
-		try:
-			raise NotImplementedError()
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
-
 	def testQR(self):
 		webbrowser.open(self.mainWindow.qrInput.text())
 	
 	def saveACopy(self, filename=False):
-		try:
-			if not isinstance(filename, str):
-				result = QtWidgets.QFileDialog.getSaveFileName(
-					self.mainWindow,
-					'Save a copy',
-					'%s.svg' % self.makeFileFriendlyName(),
-					'SVG Files (*.svg);;All files (*)'
-				)
-				if result[0] == '':
-					return
-
-				filename = result[0]
-				if filename[-4:].lower() != '.svg':
-					filename += '.svg'
-
-			def doSave(filename, content):
-				try:
-					with open(filename, 'w') as saveFile:
-						saveFile.write(content)
-				except Exception as exc:
-					unhandledError(exc, self.mainWindow)
-
-			self.mainWindow.preview.page().runJavaScript(
-				'document.documentElement.outerHTML',
-				partial(doSave, filename)
+		if not isinstance(filename, str):
+			result = QtWidgets.QFileDialog.getSaveFileName(
+				self.mainWindow,
+				'Save a copy',
+				'%s.svg' % self.makeFileFriendlyName(),
+				'SVG Files (*.svg);;All files (*)'
 			)
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+			if result[0] == '':
+				return
+
+			filename = result[0]
+			if filename[-4:].lower() != '.svg':
+				filename += '.svg'
+
+		def doSave(filename, content):
+			with open(filename, 'w') as saveFile:
+				saveFile.write(content)
+
+		self.mainWindow.preview.page().runJavaScript(
+			'document.documentElement.outerHTML',
+			partial(doSave, filename)
+		)
 
 	def captureToggle(self):
-		try:
-			tabs = self.mainWindow.previewTabs
-			if tabs.currentWidget() != self.mainWindow.cameraTab:
-				tabs.setCurrentWidget(self.mainWindow.waitTab)
+		tabs = self.mainWindow.previewTabs
+		if tabs.currentWidget() != self.mainWindow.cameraTab:
+			tabs.setCurrentWidget(self.mainWindow.waitTab)
 
-				try:
-					if self.camera is None:
-						if self.cameraInfo is None:
-							self._showError('No camera selected!')
-							tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
-							return
+			try:
+				if self.camera is None:
+					if self.cameraInfo is None:
+						self._showError('No camera selected!')
+						tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
+						return
 
-						self.camera = QtMultimedia.QCamera(self.cameraInfo)
-						self.camera.viewfinderSettings().setResolution(640,480)
-						self.camera.setViewfinder(self.cameraViewFinder)
-						self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
+					self.camera = QtMultimedia.QCamera(self.cameraInfo)
+					self.camera.viewfinderSettings().setResolution(640,480)
+					self.camera.setViewfinder(self.cameraViewFinder)
+					self.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
 
-						def statusChanged(status):
-							if status == QtMultimedia.QCamera.ActiveStatus:
-								tabs.setCurrentWidget(self.mainWindow.cameraTab)
+					def statusChanged(status):
+						if status == QtMultimedia.QCamera.ActiveStatus:
+							tabs.setCurrentWidget(self.mainWindow.cameraTab)
 
-						self.camera.statusChanged.connect(statusChanged)
-					self.camera.start()
-				except Exception as exc:
-					print(exc)
-					self._showError('Failed to initialize camera. :(')
-					tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
-					return
+					self.camera.statusChanged.connect(statusChanged)
+				self.camera.start()
+			except Exception as exc:
+				print(exc)
+				self._showError('Failed to initialize camera. :(')
+				tabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
+				return
 
-			elif tabs.currentWidget() == self.mainWindow.cameraTab:
-				def imageSaved(id, filename):
-					self.useImage(filename)
+		elif tabs.currentWidget() == self.mainWindow.cameraTab:
+			def imageSaved(id, filename):
+				self.useImage(filename)
 
-				self.imageCapture = QtMultimedia.QCameraImageCapture(self.camera)
-				self.imageCapture.imageSaved.connect(imageSaved)
-				tmpFile = os.path.abspath(os.path.join('archive', '_capture.jpg'))
-				self.imageCapture.capture(tmpFile)
-				self.camera.stop()
-
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+			self.imageCapture = QtMultimedia.QCameraImageCapture(self.camera)
+			self.imageCapture.imageSaved.connect(imageSaved)
+			tmpFile = os.path.abspath(os.path.join('archive', '_capture.jpg'))
+			self.imageCapture.capture(tmpFile)
+			self.camera.stop()
 
 	def useImage(self, filename):
-		try:
-			with open(filename, 'rb') as captureFile:
-				self.updateImage('photo', captureFile.read(), 'jpeg')
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+		with open(filename, 'rb') as captureFile:
+			self.updateImage('photo', captureFile.read(), 'jpeg')
 
 	def attemptPrint(self):
-		try:
-			self.printer = QtPrintSupport.QPrinter()
-			dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
-			if dialog.exec_() != QtWidgets.QDialog.Accepted:
-				return
-			self._adjustPreviewPosition(printPrep=True)
+		self.printer = QtPrintSupport.QPrinter()
+		dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
+		if dialog.exec_() != QtWidgets.QDialog.Accepted:
+			return
+		self._adjustPreviewPosition(printPrep=True)
 
-			def printingDone(ok):
-				if ok:
-					self.mainWindow.statusBar().showMessage('Printing done!', 5000)
-				else:
-					self.mainWindow.statusBar().showMessage('Printing failed :(')
-				self.autoScale()
-			
-			self.mainWindow.statusBar().showMessage('Printing...')
-			self.mainWindow.preview.page().print(self.printer, printingDone)
+		def printingDone(ok):
+			if ok:
+				self.mainWindow.statusBar().showMessage('Printing done!', 5000)
+			else:
+				self.mainWindow.statusBar().showMessage('Printing failed :(')
+			self.autoScale()
+		
+		self.mainWindow.statusBar().showMessage('Printing...')
+		self.mainWindow.preview.page().print(self.printer, printingDone)
 
-			name = self.makeFileFriendlyName()
-			filename = os.path.join('archive', '%s.svg' % name)
-			self.saveACopy(filename)
-			if os.path.isfile(os.path.join('archive', '_capture.jpg')):
-				shutil.move(
-					os.path.join('archive', '_capture.jpg'),
-					os.path.join('archive', '%s.jpg' % name)
-				)
-
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+		name = self.makeFileFriendlyName()
+		filename = os.path.join('archive', '%s.svg' % name)
+		self.saveACopy(filename)
+		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
+			shutil.move(
+				os.path.join('archive', '_capture.jpg'),
+				os.path.join('archive', '%s.jpg' % name)
+			)
 
 	def makeFileFriendlyName(self, replaceBlankWithAnonymous=True):
 		names = []
@@ -243,93 +215,78 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		return name
 
 	def exit(self):
-		try:
-			# @TODO: check if changes made since last print or save
-			self.quit()
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+		# @TODO: maybe check if changes made since last print or save
+		self.quit()
 
 	def reloadTemplates(self):
+		combobox = self.mainWindow.templateSelector
+		combobox.clear()
+		templates = []
 		try:
-			combobox = self.mainWindow.templateSelector
-			combobox.clear()
-			templates = []
-			try:
-				for filename in os.listdir('templates'):
-					if filename[-4:].lower() == '.svg':
-						templates.append(filename)
-				templates.sort()
-				combobox.addItems(templates)
+			for filename in os.listdir('templates'):
+				if filename[-4:].lower() == '.svg':
+					templates.append(filename)
+			templates.sort()
+			combobox.addItems(templates)
 
-				combobox.setCurrentIndex(combobox.count()-1)
-				self.loadTemplate(combobox.currentText())
-			except:
-				self._showError('Failed to load templates from %s' % os.path.abspath('templates'))
+			combobox.setCurrentIndex(combobox.count()-1)
+			self.loadTemplate(combobox.currentText())
+		except:
+			self._showError('Failed to load templates from %s' % os.path.abspath('templates'))
 
-			combobox.insertSeparator(len(templates))
-			combobox.addItem('✎ Choose custom...', CHOOSE_CUSTOM)
-			combobox.addItem('⟳ Reload templates', RELOAD)
-
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+		combobox.insertSeparator(len(templates))
+		combobox.addItem('✎ Choose custom...', CHOOSE_CUSTOM)
+		combobox.addItem('⟳ Reload templates', RELOAD)
 
 	def loadTemplate(self, filename):
-		try:
-			self.mainWindow.preview.hide()
+		self.mainWindow.preview.hide()
 
-			filename = os.path.join('templates', filename)
-			self.templateFilename = filename
+		filename = os.path.join('templates', filename)
+		self.templateFilename = filename
 
-			self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath(filename)))
-
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+		self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath(filename)))
 
 	# this runs whenever the SVG preview is loaded (including blank loads)
 	def _contentLoaded(self):
 		def addElements(elements):
-			try:
-				# Remove boring, old, template-specific widgets from the form
-				rememberedValues = {}
-				for rowID in range(self.mainWindow.formLayout.rowCount()-1, 3, -1):
-					layoutItem = self.mainWindow.formLayout.itemAt(
-						rowID,
-						QtWidgets.QFormLayout.FieldRole
-					)
-					if layoutItem is not None:
-						widget = layoutItem.widget()
-						if widget in self.templateElements:
-							label = self.mainWindow.formLayout.labelForField(widget)
-							rememberedValues[label.text()] = widget.text()
-							label.deleteLater()
-							widget.deleteLater()
-			
-				self.nameInputs = []
+			# Remove boring, old, template-specific widgets from the form
+			rememberedValues = {}
+			for rowID in range(self.mainWindow.formLayout.rowCount()-1, 3, -1):
+				layoutItem = self.mainWindow.formLayout.itemAt(
+					rowID,
+					QtWidgets.QFormLayout.FieldRole
+				)
+				if layoutItem is not None:
+					widget = layoutItem.widget()
+					if widget in self.templateElements:
+						label = self.mainWindow.formLayout.labelForField(widget)
+						rememberedValues[label.text()] = widget.text()
+						label.deleteLater()
+						widget.deleteLater()
+		
+			self.nameInputs = []
 
-				# add new and exciting template-specific widgets to the form
-				self.templateElements = []
-				for element in elements:
-					isFirstName = element['id'].lower() == 'first name'
-					isLastName = element['id'].lower() == 'last name'
+			# add new and exciting template-specific widgets to the form
+			self.templateElements = []
+			for element in elements:
+				isFirstName = element['id'].lower() == 'first name'
+				isLastName = element['id'].lower() == 'last name'
 
-					widget = QtWidgets.QLineEdit(self.mainWindow)
-					if element['id'] in rememberedValues:
-						widget.setText(rememberedValues[element['id']])
-					else:
-						widget.setText(element['value'])
+				widget = QtWidgets.QLineEdit(self.mainWindow)
+				if element['id'] in rememberedValues:
+					widget.setText(rememberedValues[element['id']])
+				else:
+					widget.setText(element['value'])
 
-					widget.textChanged.connect(partial(self.textFieldUpdated, isFirstName or isLastName))
+				widget.textChanged.connect(partial(self.textFieldUpdated, isFirstName or isLastName))
 
-					self.templateElements.append(widget)
-					self.mainWindow.formLayout.addRow(element['id'], widget)
+				self.templateElements.append(widget)
+				self.mainWindow.formLayout.addRow(element['id'], widget)
 
-					if isFirstName:
-						self.nameInputs.insert(0, widget)
-					elif isLastName:
-						self.nameInputs.append(widget)
-
-			except Exception as exc:
-				unhandledError(exc, self.mainWindow)
+				if isFirstName:
+					self.nameInputs.insert(0, widget)
+				elif isLastName:
+					self.nameInputs.append(widget)
 
 		js = '''
 			var collection = document.getElementsByTagName("text");
@@ -399,34 +356,30 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self._updatePreview(True)
 
 	def _updatePreview(self, updateQRInput):
-		try:
-			self.qrTimer.stop()
-			self.autoScale()
-			# Hack-job alert :(
-			# QtWebEngine cannot access page elements...
-			# But it can run arbirtary javascript!
-			js = '''
-				var el = document.getElementById("%s");
-				if(el) el.firstChild.textContent = "%s";
-			'''
+		self.qrTimer.stop()
+		self.autoScale()
+		# Hack-job alert :(
+		# QtWebEngine cannot access page elements...
+		# But it can run arbirtary javascript!
+		js = '''
+			var el = document.getElementById("%s");
+			if(el) el.firstChild.textContent = "%s";
+		'''
+		def update(id, value):
+			self.mainWindow.preview.page().runJavaScript(js % (id, value))
+		
+		for widget in self.templateElements:
+			id = self.mainWindow.formLayout.labelForField(widget).text()
+			update(id, widget.text())
 
-			def update(id, value):
-				self.mainWindow.preview.page().runJavaScript(js % (id, value))
-			
-			for widget in self.templateElements:
-				id = self.mainWindow.formLayout.labelForField(widget).text()
-				update(id, widget.text())
+		if updateQRInput != False:
+			name = QtCore.QUrl.toPercentEncoding(self.makeFileFriendlyName(False)).data().decode('utf-8')
+			if name == '':
+				self.mainWindow.qrInput.setText('http://makeict.org/')
+			else:
+				self.mainWindow.qrInput.setText('http://makeict.org/wiki/User:%s' % name)
 
-			if updateQRInput != False:
-				name = QtCore.QUrl.toPercentEncoding(self.makeFileFriendlyName(False)).data().decode('utf-8')
-				if name == '':
-					self.mainWindow.qrInput.setText('http://makeict.org/')
-				else:
-					self.mainWindow.qrInput.setText('http://makeict.org/wiki/User:%s' % name)
-
-			self.qrTimer.start()
-		except Exception as exc:
-			unhandledError(exc, self.mainWindow)
+		self.qrTimer.start()
 
 	def updateQRDisplay(self):
 		buffer = io.BytesIO()
@@ -435,6 +388,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.updateImage('qr', buffer.getvalue(), 'png')
 	
 	#	type should be "png" or "jpeg"
+
 	def updateImage(self, id, rawData, imageType):
 		def goToPreview(dummy=None):
 			self.mainWindow.previewTabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
@@ -503,33 +457,43 @@ class BadgePrinterApp(QtWidgets.QApplication):
 	def _showError(self, msg):
 		QtWidgets.QMessageBox.warning(self.mainWindow, 'MakeICT Badge Printer', msg)
 
+def handle_exception(parentWindow, excType, exc, tb):
+	if issubclass(excType, KeyboardInterrupt):
+		sys.__excepthook__(excType, exc, tb)
+		return
 
-def unhandledError(exc, parent=None):
-	dialog = QtWidgets.QMessageBox(parent)
-	dialog.setWindowTitle('Error :(')
+	stack = traceback.format_tb(tb)
+	print(''.join(stack))
+
 	if isinstance(exc, NotImplementedError):
-		dialog.setText('Sorry! This feature isn\'t implemented yet :(\n\nWanna help? Visit http://github.com/makeict/badge-printer')
-	else:
-		stack = traceback.format_exc()
-		print(stack)
+		if str(exc).strip() == '':
+			name = 'This feature'
+		else:
+			name = 'The "%s" feature' % exc
+
+		QtWidgets.QMessageBox.warning(
+			parentWindow,
+			'Feature not ready',
+			name + ' isn\'t ready yet.\n\nWanna help? Visit http://github.com/makeict/badge-printer' 
+		)
+	else:		
+		dialog = QtWidgets.QMessageBox(parentWindow)
+		dialog.setWindowTitle('Error :(')
 		dialog.setText('Well this is embarrasing... Something went wrong and I didn\'t know how to handle it.\n\nPlease help us fix this bug!')
 		dialog.setDetailedText(
 			'The details below can help troubleshoot the issue. Please copy-and-paste this in any report.\n\n' +
 			'Developer info at http://github.com/makeict/badge-printer\n\n' + 
-			'%s' % stack
+			'%s' % ''.join(stack)
 		)
-
-	dialog.setModal(True)
-	dialog.exec_()
+		dialog.setModal(True)
+		dialog.exec_()
 
 if __name__ == '__main__':
-	try:
-		os.makedirs('archive', exist_ok=True)
+	os.makedirs('archive', exist_ok=True)
 
-		app = BadgePrinterApp(sys.argv)
-		app.doItNowDoItGood()
-	except Exception as exc:
-		unhandledError(exc)
+	app = BadgePrinterApp(sys.argv)
+	sys.excepthook = partial(handle_exception, app.mainWindow)
+	app.doItNowDoItGood()
 
 	try:
 		# clean up

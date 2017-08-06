@@ -36,14 +36,14 @@
      fit-margin-left="0"
      fit-margin-right="0"
      fit-margin-bottom="0"
-     inkscape:zoom="0.86014541"
-     inkscape:cx="270.94764"
-     inkscape:cy="310.7476"
+     inkscape:zoom="1.7202908"
+     inkscape:cx="93.616486"
+     inkscape:cy="256.40285"
      inkscape:window-x="44"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg5849"
-     inkscape:snap-global="false"
+     inkscape:snap-global="true"
      showguides="true"
      inkscape:guide-bbox="true"
      inkscape:snap-center="false"
@@ -86,16 +86,15 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
   <path
-     style="fill:#ffffff;fill-opacity:1;fill-rule:nonzero;stroke:#000000;stroke-width:5.71629858;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:19.43999863;stroke-opacity:0.99415205"
-     d="m 89.29742,2.8581525 c -8.280403,0 -14.949019,6.28206 -14.949019,14.0861495 V 463.05568 c 0,7.80413 6.668616,14.08616 14.949019,14.08616 h 301.40515 c 8.28045,0 14.94902,-6.28203 14.94902,-14.08616 V 16.944302 c 0,-7.8040895 -6.66857,-14.0861495 -14.94902,-14.0861495 z M 202.02307,31.696722 h 75.95385 c 6.53512,0 11.7961,2.90045 11.7961,11.13349 0,8.23304 -5.26098,11.13349 -11.7961,11.13349 h -75.95385 c -6.53511,0 -11.7961,-2.90045 -11.7961,-11.13349 0,-8.23304 5.26099,-11.13349 11.7961,-11.13349 z"
-     id="rect3041"
-     inkscape:connector-curvature="0"
-     sodipodi:nodetypes="ssssssssssssssss" />
+     style="opacity:1;fill:#ffffff;fill-opacity:1;stroke:#53565a;stroke-width:8;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1;paint-order:normal"
+     d="M 128.18164 3.9257812 C 101.58964 3.9257812 80.181641 25.333781 80.181641 51.925781 L 80.181641 460.07422 C 80.181641 486.66622 101.58964 508.07422 128.18164 508.07422 L 383.81836 508.07422 C 410.41036 508.07422 431.81836 486.66622 431.81836 460.07422 L 431.81836 51.925781 C 431.81836 25.333781 410.41036 3.9257812 383.81836 3.9257812 L 128.18164 3.9257812 z M 215.49219 33.810547 L 296.50781 33.810547 C 303.47861 33.810547 309.0918 36.903637 309.0918 45.685547 C 309.0918 54.467456 303.47861 57.560547 296.50781 57.560547 L 215.49219 57.560547 C 208.5214 57.560547 202.9082 54.467456 202.9082 45.685547 C 202.9082 36.903637 208.5214 33.810547 215.49219 33.810547 z "
+     transform="scale(0.93749998)"
+     id="rect4501" />
   <g
      id="g924"
      transform="matrix(2.4659112,0,0,2.4659112,-55.760065,32.436982)">

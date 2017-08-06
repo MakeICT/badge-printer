@@ -9,13 +9,27 @@ class WebViewer(QtWebEngineWidgets.QWebEngineView):
 	def __init__(self, parent):
 		super().__init__(parent)
 		self.loadFinished.connect(self._contentLoaded)
-		self.page().setBackgroundColor(self.palette().color(self.backgroundRole()))
-		self.installEventFilter(self)
+		self._css = '''
+			<style>
+				@media screen {
+					svg {
+						background: ''' + self.palette().color(self.backgroundRole()).name() + ''';
+						margin: auto;
+						margin-top: 2%;
+						height: 96%;
+						width: auto;
+						max-width: 96%;
+					}
+				}
+			</style>
+		'''
+		self._css = self._css.replace('\n', '').replace('\t', '')
 
 	def _contentLoaded(self):
 		def emitIfReady(content):
 			if content != '<html><head></head><body></body></html>':
-				self.autoScale()
+
+				self.runJS('document.documentElement.innerHTML += "' + self._css + '";')
 				self.documentReady.emit(content)
 
 		self.processContent(emitIfReady)
@@ -45,26 +59,10 @@ class WebViewer(QtWebEngineWidgets.QWebEngineView):
 		self.runJS(js % (id, data), callback)
 
 	def processContent(self, processFunction):
-		self.runJS('document.documentElement.outerHTML', processFunction)
+		def stripCSS(content):
+			processFunction(content.replace(self._css, ''))
 
-	def autoScale(self):
-		def haveDocumentSize(size):
-			if 0 in size:
-				return
-			contentSize = QtCore.QSize(size[0], size[1])
-
-			widthRatio = self.width() / contentSize.width()
-			heightRatio = self.height() / contentSize.height()
-			scale = min(widthRatio, heightRatio)
-			self.setZoomFactor(scale)
-			# give a little padding
-			self.setZoomFactor(.9*scale)
-
-#			# try to vertically center...
-#			self._adjustPreviewPosition(int((preview.height() - scale*contentSize.height())))
-
-		js = '[document.documentElement.scrollWidth, document.documentElement.scrollHeight]'
-		self.runJS(js, haveDocumentSize)
+		self.runJS('document.documentElement.outerHTML', stripCSS)
 
 	def extractTags(self, tagName, attributes, processFunction):
 		attributes.insert(0, 'id')
@@ -84,12 +82,6 @@ class WebViewer(QtWebEngineWidgets.QWebEngineView):
 			}
 			result;'''
 		self.runJS(js % (tagName, attributes), processFunction)
-
-	def eventFilter(self, obj, event):
-		if isinstance(event, QtGui.QResizeEvent):
-			self.autoScale()
-
-		return super().eventFilter(obj, event)
 
 #	def _adjustPreviewPosition(self, marginInPixels=0, printPrep=False):
 #		preview = self.mainWindow.preview

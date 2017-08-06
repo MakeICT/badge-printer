@@ -168,14 +168,12 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
 		if dialog.exec_() != QtWidgets.QDialog.Accepted:
 			return
-#		self._adjustPreviewPosition(printPrep=True)
 
 		def printingDone(ok):
 			if ok:
 				self.mainWindow.statusBar().showMessage('Printing done!', 5000)
 			else:
 				self.mainWindow.statusBar().showMessage('Printing failed :(')
-			#self.autoScale()
 		
 		self.mainWindow.statusBar().showMessage('Printing...')
 		self.mainWindow.preview.page().print(self.printer, printingDone)
@@ -278,7 +276,6 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.preview.extractTags('text', ['textContent'], addElements)
 
 		self._updatePreview(False)
-		#self.autoScale()
 		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
 			self.useImage(os.path.join('archive', '_capture.jpg'))
 		self.mainWindow.preview.show()
@@ -288,8 +285,6 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 	def _updatePreview(self, updateQRInput):
 		self.qrTimer.stop()
-		#self.autoScale()
-		#self.mainWindow.preview.autoScale()
 		for widget in self.templateElements:
 			id = self.mainWindow.formLayout.labelForField(widget).text()
 			self.mainWindow.preview.setText(id, widget.text())

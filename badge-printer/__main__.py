@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, traceback, io
-import base64, shutil
+import shutil
 from functools import partial
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
@@ -39,11 +39,6 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		
 		self.mainWindow.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
 
-		preview = self.mainWindow.preview
-		preview.page().setBackgroundColor(
-			preview.palette().color(preview.backgroundRole())
-		)
-
 		self.mainWindow.actionLoadTemplate.triggered.connect(self.browseForTemplate)
 		self.mainWindow.actionSaveACopy.triggered.connect(self.saveACopy)
 
@@ -56,9 +51,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.cancelCapture.clicked.connect(self.cancelCapture)
 
 		self.mainWindow.templateSelector.currentIndexChanged.connect(self._templateSelected)
-		
-		self.mainWindow.preview.installEventFilter(self)
-		self.mainWindow.preview.loadFinished.connect(self._contentLoaded)
+
+		self.mainWindow.preview.documentReady.connect(self._templateLoadComplete)
 
 		def updatePreviewWithoutQR(qrInputText):
 			self._updatePreview(False)
@@ -123,10 +117,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			with open(filename, 'w') as saveFile:
 				saveFile.write(content)
 
-		self.mainWindow.preview.page().runJavaScript(
-			'document.documentElement.outerHTML',
-			partial(doSave, filename)
-		)
+		self.mainWindow.preview.processContent(partial(doSave, filename))
 
 	def captureToggle(self):
 		tabs = self.mainWindow.previewTabs
@@ -168,21 +159,23 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 	def useImage(self, filename):
 		with open(filename, 'rb') as captureFile:
-			self.updateImage('photo', captureFile.read(), 'jpeg')
+			self.mainWindow.preview.setImage('photo', captureFile.read(), 'jpeg')
+
+		self.mainWindow.previewTabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
 
 	def attemptPrint(self):
 		self.printer = QtPrintSupport.QPrinter()
 		dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
 		if dialog.exec_() != QtWidgets.QDialog.Accepted:
 			return
-		self._adjustPreviewPosition(printPrep=True)
+#		self._adjustPreviewPosition(printPrep=True)
 
 		def printingDone(ok):
 			if ok:
 				self.mainWindow.statusBar().showMessage('Printing done!', 5000)
 			else:
 				self.mainWindow.statusBar().showMessage('Printing failed :(')
-			self.autoScale()
+			#self.autoScale()
 		
 		self.mainWindow.statusBar().showMessage('Printing...')
 		self.mainWindow.preview.page().print(self.printer, printingDone)
@@ -241,7 +234,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.preview.setUrl(QtCore.QUrl.fromLocalFile(os.path.abspath(filename)))
 
 	# this runs whenever the SVG preview is loaded (including blank loads)
-	def _contentLoaded(self):
+	def _templateLoadComplete(self, content):
 		def addElements(elements):
 			# Remove boring, old, template-specific widgets from the form
 			rememberedValues = {}
@@ -270,7 +263,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 				if element['id'] in rememberedValues:
 					widget.setText(rememberedValues[element['id']])
 				else:
-					widget.setText(element['value'])
+					widget.setText(element['textContent'])
 
 				widget.textChanged.connect(partial(self.textFieldUpdated, isFirstName or isLastName))
 
@@ -282,89 +275,24 @@ class BadgePrinterApp(QtWidgets.QApplication):
 				elif isLastName:
 					self.nameInputs.append(widget)
 
-		js = '''
-			var collection = document.getElementsByTagName("text");
-			var result = [];
-			for(var i=0; i<collection.length; i++){
-				if(collection[i].id){
-					result.push({
-						"id": collection[i].id,
-						"value": collection[i].textContent
-					});
-				}
-			}
-			result;'''
-		self.mainWindow.preview.page().runJavaScript(js, addElements)
+		self.mainWindow.preview.extractTags('text', ['textContent'], addElements)
 
 		self._updatePreview(False)
-		self.autoScale()
+		#self.autoScale()
 		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
 			self.useImage(os.path.join('archive', '_capture.jpg'))
 		self.mainWindow.preview.show()
-
-
-		self.mainWindow.preview.page()
-
-	def autoScale(self):
-		preview = self.mainWindow.preview
-		def haveDocumentSize(size):
-			if 0 in size:
-				return
-			contentSize = QtCore.QSize(size[0], size[1])
-
-			widthRatio = preview.width() / contentSize.width()
-			heightRatio = preview.height() / contentSize.height()
-			scale = min(widthRatio, heightRatio)
-			preview.setZoomFactor(scale)
-			# give a little padding
-			preview.setZoomFactor(.9*scale)
-
-			# try to vertically center...
-			self._adjustPreviewPosition(int((preview.height() - scale*contentSize.height())))
-
-		js = '[document.documentElement.scrollWidth, document.documentElement.scrollHeight]'
-		preview.page().runJavaScript(js, haveDocumentSize)
-
-	def _adjustPreviewPosition(self, marginInPixels=0, printPrep=False):
-		preview = self.mainWindow.preview
-		preview.page().runJavaScript('''
-			document.documentElement.style.margin = "auto";
-			document.documentElement.style.marginTop = "%dpx";
-		''' % marginInPixels)
-
-		if printPrep:
-			preview.page().setBackgroundColor(QtCore.Qt.white)
-		else:
-			preview.page().setBackgroundColor(
-				preview.palette().color(preview.backgroundRole())
-			)
-
-	def eventFilter(self, obj, event):
-		if obj == self.mainWindow.preview:
-			if isinstance(event, QtGui.QResizeEvent):
-				self.autoScale()
-
-		return super().eventFilter(obj, event)
 
 	def textFieldUpdated(self, value):
 		self._updatePreview(True)
 
 	def _updatePreview(self, updateQRInput):
 		self.qrTimer.stop()
-		self.autoScale()
-		# Hack-job alert :(
-		# QtWebEngine cannot access page elements...
-		# But it can run arbirtary javascript!
-		js = '''
-			var el = document.getElementById("%s");
-			if(el) el.firstChild.textContent = "%s";
-		'''
-		def update(id, value):
-			self.mainWindow.preview.page().runJavaScript(js % (id, value))
-		
+		#self.autoScale()
+		#self.mainWindow.preview.autoScale()
 		for widget in self.templateElements:
 			id = self.mainWindow.formLayout.labelForField(widget).text()
-			update(id, widget.text())
+			self.mainWindow.preview.setText(id, widget.text())
 
 		if updateQRInput != False:
 			name = QtCore.QUrl.toPercentEncoding(self.makeFileFriendlyName(False)).data().decode('utf-8')
@@ -379,21 +307,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		buffer = io.BytesIO()
 		qr = pyqrcode.create(self.mainWindow.qrInput.text())
 		qr.png(buffer, scale=10, quiet_zone=0)
-		self.updateImage('qr', buffer.getvalue(), 'png')
+		self.mainWindow.preview.setImage('qr', buffer.getvalue(), 'png')
 	
-	#	type should be "png" or "jpeg"
-
-	def updateImage(self, id, rawData, imageType):
-		def goToPreview(dummy=None):
-			self.mainWindow.previewTabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
-
-		data = 'data:image/%s;base64,%s' % (imageType, base64.b64encode(rawData).decode('ascii'))
-		js = '''
-			var el = document.getElementById("%s");
-			if(el) el.setAttribute("xlink:href", "%s");
-		'''
-		self.mainWindow.preview.page().runJavaScript(js % (id, data), goToPreview)
-
 	def refreshCameras(self):
 		self.mainWindow.menuCameras.clear()
 
@@ -457,6 +372,7 @@ def handle_exception(parentWindow, excType, exc, tb):
 		return
 
 	stack = traceback.format_tb(tb)
+	print('Exception: %s' % exc)
 	print(''.join(stack))
 
 	if isinstance(exc, NotImplementedError):

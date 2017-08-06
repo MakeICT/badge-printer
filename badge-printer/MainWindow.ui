@@ -30,16 +30,13 @@
       <property name="usesScrollButtons">
        <bool>false</bool>
       </property>
-      <property name="tabBarAutoHide" stdset="0">
-       <bool>false</bool>
-      </property>
       <widget class="QWidget" name="badgePreviewTab">
        <attribute name="title">
         <string>Badge Preview</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
-         <widget class="QWebEngineView" name="preview" native="true">
+         <widget class="WebViewer" name="preview" native="true">
           <property name="sizePolicy">
            <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
             <horstretch>0</horstretch>
@@ -83,7 +80,16 @@
         <property name="spacing">
          <number>0</number>
         </property>
-        <property name="margin">
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
          <number>0</number>
         </property>
         <item>
@@ -300,14 +306,15 @@
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QWebEngineView</class>
-   <extends>QWidget</extends>
-   <header>QtWebEngine/QWebEngineView</header>
-  </customwidget>
-  <customwidget>
    <class>QCameraViewfinder</class>
    <extends>QWidget</extends>
    <header>PyQt5/QtMultimediaWidgets</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>WebViewer</class>
+   <extends>QWidget</extends>
+   <header>CustomWidgets</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

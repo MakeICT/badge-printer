@@ -12,18 +12,22 @@ from PyQt5 import QtMultimedia
 import pyqrcode
 import webbrowser
 
+from log import WebFormLogger
+
 CHOOSE_CUSTOM = object()
 RELOAD = object()
 
 class BadgePrinterApp(QtWidgets.QApplication):
 	def __init__(self, args):
 		super().__init__(args)
+
 		self.basePath = os.path.dirname(os.path.realpath(__file__))
 		self.templateFilename = None
 		self.cameraInfo = None
 		self.camera = None
 		self.templateElements = []
 		self.nameInputs = []
+		self.lastImage = None
 
 		# Switch cameras causes a crash when the old camera object is garbage collected
 		# This list keeps all cameras in memory
@@ -44,6 +48,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.mainWindow.actionCapture.triggered.connect(self.captureToggle)
 		self.mainWindow.actionPrint.triggered.connect(self.attemptPrint)
+		self.mainWindow.actionLogOnly.triggered.connect(self.addLogEntry)
 		self.mainWindow.actionImportImage.triggered.connect(self.browseForImage)
 		self.mainWindow.actionAbout.triggered.connect(self.showAppInfo)
 
@@ -59,6 +64,27 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self._updatePreview(False)
 
 		self.mainWindow.qrInput.textChanged.connect(updatePreviewWithoutQR)
+
+		if '--disable-log' in args:
+			self.entryLogger = None
+			self.mainWindow.controlsLayout.removeWidget(self.mainWindow.logButton)
+			self.mainWindow.logButton.deleteLater()
+			self.mainWindow.logButton = None
+
+			self.mainWindow.printButton.setText('Print')
+			self.mainWindow.actionPrint.setText('Print...')
+			self.mainWindow.menuFile.removeAction(self.mainWindow.actionLogOnly)
+			self.mainWindow.actionLogOnly.deleteLater()
+			self.mainWindow.actionLogOnly = None
+
+		else:
+			self.entryLogger = WebFormLogger(
+				'https://script.google.com/macros/s/AKfycbz0IA4vDWAfQJLtBSnrtKhU1TjV5wr3lbziSRDfiNmGLgVoh0s/exec',
+				os.path.join('archive', 'log.txt')
+			)
+			self.entryLogger.logComplete.connect(self._entryLoggingComplete)
+			self.entryLogger.fallbackError.connect(self._entryLogFallbackError)
+
 
 	def doItNowDoItGood(self):
 		self.reloadTemplates()
@@ -164,6 +190,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.useImage(result[0])
 
 	def useImage(self, filename):
+		self.lastImage = filename
 		with open(filename, 'rb') as captureFile:
 			self.mainWindow.preview.setImage('photo', captureFile.read(), 'jpeg')
 
@@ -181,17 +208,42 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			else:
 				self.mainWindow.statusBar().showMessage('Printing failed :(')
 		
+		self.addLogEntry()
 		self.mainWindow.statusBar().showMessage('Printing...')
 		self.mainWindow.preview.page().print(self.printer, printingDone)
 
+		self.mainWindow.statusBar().showMessage('Archiving images...')
 		name = self.makeFileFriendlyName()
-		filename = os.path.join('archive', '%s.svg' % name)
+		filename = os.path.join('archive', 'badges', '%s.svg' % name)
 		self.saveACopy(filename)
 		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
 			shutil.move(
 				os.path.join('archive', '_capture.jpg'),
-				os.path.join('archive', '%s.jpg' % name)
+				os.path.join('archive', 'captures', '%s.jpg' % name)
 			)
+
+	def _entryLoggingComplete(self, ok, error):
+		if ok:
+			self.mainWindow.statusBar().showMessage('Logging done!', 5000)
+		else:
+			self.mainWindow.statusBar().showMessage('Web logging failed. %s' % error)
+
+	def _entryLogFallbackError(self, error):
+		raise error
+
+	def addLogEntry(self):
+		if self.entryLogger is None:
+			print('Logging disabled')
+			return
+
+		self.mainWindow.statusBar().showMessage('Logging entry...')
+		data = {}
+		for w in self.templateElements:
+			fieldID = self.mainWindow.formLayout.labelForField(w).text()
+			fieldValue = w.text()
+			data[fieldID] = fieldValue
+
+		self.entryLogger.logEntry(data)
 
 	def makeFileFriendlyName(self, replaceBlankWithAnonymous=True):
 		names = []
@@ -282,8 +334,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.preview.extractTags('text', ['textContent'], addElements)
 
 		self._updatePreview(False)
-		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
-			self.useImage(os.path.join('archive', '_capture.jpg'))
+		if self.lastImage is not None and os.path.isfile(self.lastImage):
+			self.useImage(self.lastImage)
 		self.mainWindow.preview.show()
 
 	def textFieldUpdated(self, value):
@@ -401,7 +453,8 @@ def handle_exception(parentWindow, excType, exc, tb):
 		dialog.exec_()
 
 if __name__ == '__main__':
-	os.makedirs('archive', exist_ok=True)
+	os.makedirs(os.path.join('archive', 'captures'), exist_ok=True)
+	os.makedirs(os.path.join('archive', 'badges'), exist_ok=True)
 
 	app = BadgePrinterApp(sys.argv)
 	sys.excepthook = partial(handle_exception, app.mainWindow)

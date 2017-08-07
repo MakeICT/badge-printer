@@ -110,7 +110,7 @@
      </widget>
     </item>
     <item>
-     <layout class="QVBoxLayout" name="verticalLayout" stretch="2,2,1">
+     <layout class="QVBoxLayout" name="controlsLayout" stretch="2,2,1,0">
       <item>
        <layout class="QFormLayout" name="formLayout">
         <property name="fieldGrowthPolicy">
@@ -204,7 +204,14 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Print</string>
+         <string>Print and log</string>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="logButton">
+        <property name="text">
+         <string>Log only</string>
         </property>
        </widget>
       </item>
@@ -231,6 +238,7 @@
     <addaction name="actionCapture"/>
     <addaction name="actionImportImage"/>
     <addaction name="actionPrint"/>
+    <addaction name="actionLogOnly"/>
     <addaction name="separator"/>
     <addaction name="actionExit"/>
    </widget>
@@ -253,7 +261,7 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="actionPrint">
    <property name="text">
-    <string>&amp;Print...</string>
+    <string>&amp;Print and log...</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+P</string>
@@ -315,6 +323,11 @@
     <string>Ctrl+I</string>
    </property>
   </action>
+  <action name="actionLogOnly">
+   <property name="text">
+    <string>Log only</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -357,6 +370,22 @@
     <hint type="sourcelabel">
      <x>485</x>
      <y>207</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>logButton</sender>
+   <signal>clicked()</signal>
+   <receiver>actionLogOnly</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>499</x>
+     <y>449</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

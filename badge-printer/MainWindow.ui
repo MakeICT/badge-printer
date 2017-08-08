@@ -325,7 +325,7 @@
   </action>
   <action name="actionLogOnly">
    <property name="text">
-    <string>Log only</string>
+    <string>Log &amp;only</string>
    </property>
   </action>
  </widget>
@@ -343,6 +343,16 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
+ <tabstops>
+  <tabstop>templateSelector</tabstop>
+  <tabstop>qrInput</tabstop>
+  <tabstop>testQR</tabstop>
+  <tabstop>captureButton</tabstop>
+  <tabstop>printButton</tabstop>
+  <tabstop>logButton</tabstop>
+  <tabstop>previewTabs</tabstop>
+  <tabstop>cancelCapture</tabstop>
+ </tabstops>
  <resources/>
  <connections>
   <connection>

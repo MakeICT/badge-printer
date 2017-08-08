@@ -311,6 +311,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 			# add new and exciting template-specific widgets to the form
 			self.templateElements = []
+
+			# keep track of this to update tab order
+			lastElement = self.mainWindow.testQR
 			for element in elements:
 				isFirstName = element['id'].lower() == 'first name'
 				isLastName = element['id'].lower() == 'last name'
@@ -330,6 +333,11 @@ class BadgePrinterApp(QtWidgets.QApplication):
 					self.nameInputs.insert(0, widget)
 				elif isLastName:
 					self.nameInputs.append(widget)
+
+				QtWidgets.QWidget.setTabOrder(lastElement, widget)
+				lastElement = widget
+
+			QtWidgets.QWidget.setTabOrder(lastElement, self.mainWindow.captureButton)
 
 		self.mainWindow.preview.extractTags('text', ['textContent'], addElements)
 

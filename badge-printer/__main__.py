@@ -303,7 +303,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 					widget = layoutItem.widget()
 					if widget in self.templateElements:
 						label = self.mainWindow.formLayout.labelForField(widget)
-						rememberedValues[label.text()] = widget.text()
+						rememberedValues[label.text().replace('&', '')] = widget.text()
 						label.deleteLater()
 						widget.deleteLater()
 		
@@ -352,7 +352,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 	def _updatePreview(self, updateQRInput):
 		self.qrTimer.stop()
 		for widget in self.templateElements:
-			id = self.mainWindow.formLayout.labelForField(widget).text()
+			id = self.mainWindow.formLayout.labelForField(widget).text().replace('&', '')
 			self.mainWindow.preview.setText(id, widget.text())
 
 		if updateQRInput != False:

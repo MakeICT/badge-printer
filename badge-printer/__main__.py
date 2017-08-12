@@ -209,7 +209,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			)
 
 		if self.mainWindow.actionUseInkscape.isChecked():
-			printProcess = subprocess.Popen(['inkscape','--verb','FilePrint',filename])
+			printProcess = subprocess.Popen(['inkscape','--verb','FilePrint','--verb','FileQuit',filename])
+			print(printProcess.pid)
 		else:
 			self.printer = QtPrintSupport.QPrinter()
 			dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)

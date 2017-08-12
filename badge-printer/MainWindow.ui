@@ -254,8 +254,15 @@
     </property>
     <addaction name="separator"/>
    </widget>
+   <widget class="QMenu" name="menuPrint_mode">
+    <property name="title">
+     <string>&amp;Options</string>
+    </property>
+    <addaction name="actionUseInkscape"/>
+   </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCameras"/>
+   <addaction name="menuPrint_mode"/>
    <addaction name="menuHelp"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
@@ -326,6 +333,17 @@
   <action name="actionLogOnly">
    <property name="text">
     <string>Log &amp;only</string>
+   </property>
+  </action>
+  <action name="actionUseInkscape">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use &amp;Inkscape to print</string>
    </property>
   </action>
  </widget>

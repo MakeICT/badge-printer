@@ -4,6 +4,7 @@
 import os, sys, traceback, io
 import shutil
 from functools import partial
+import subprocess
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5 import QtWebEngineWidgets, QtPrintSupport, QtMultimediaWidgets
@@ -197,21 +198,6 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.previewTabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
 
 	def attemptPrint(self):
-		self.printer = QtPrintSupport.QPrinter()
-		dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
-		if dialog.exec_() != QtWidgets.QDialog.Accepted:
-			return
-
-		def printingDone(ok):
-			if ok:
-				self.mainWindow.statusBar().showMessage('Printing done!', 5000)
-			else:
-				self.mainWindow.statusBar().showMessage('Printing failed :(')
-		
-		self.addLogEntry()
-		self.mainWindow.statusBar().showMessage('Printing...')
-		self.mainWindow.preview.page().print(self.printer, printingDone)
-
 		self.mainWindow.statusBar().showMessage('Archiving images...')
 		name = self.makeFileFriendlyName()
 		filename = os.path.join('archive', 'badges', '%s.svg' % name)
@@ -221,6 +207,24 @@ class BadgePrinterApp(QtWidgets.QApplication):
 				os.path.join('archive', '_capture.jpg'),
 				os.path.join('archive', 'captures', '%s.jpg' % name)
 			)
+
+		if self.mainWindow.actionUseInkscape.isChecked():
+			printProcess = subprocess.Popen(['inkscape','--verb','FilePrint',filename])
+		else:
+			self.printer = QtPrintSupport.QPrinter()
+			dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
+			if dialog.exec_() != QtWidgets.QDialog.Accepted:
+				return
+
+			def printingDone(ok):
+				if ok:
+					self.mainWindow.statusBar().showMessage('Printing done!', 5000)
+				else:
+					self.mainWindow.statusBar().showMessage('Printing failed :(')
+				self.mainWindow.statusBar().showMessage('Printing...')
+				self.mainWindow.preview.page().print(self.printer, printingDone)
+		
+		self.addLogEntry()
 
 	def _entryLoggingComplete(self, ok, error):
 		if ok:

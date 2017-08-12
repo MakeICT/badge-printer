@@ -11,12 +11,10 @@ class WebViewer(QtWebEngineWidgets.QWebEngineView):
 		self.loadFinished.connect(self._contentLoaded)
 		self._css = '''
 			<style>
-				svg {
-					margin: auto;
-				}
 				@media screen {
 					svg {
 						background: ''' + self.palette().color(self.backgroundRole()).name() + ''';
+						margin: auto;
 						margin-top: 2%;
 						height: 96%;
 						width: auto;

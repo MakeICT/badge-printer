@@ -18,7 +18,7 @@
     <normaloff>images/icon.svg</normaloff>images/icon.svg</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2,3">
+   <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="2">
     <item>
      <widget class="QTabWidget" name="previewTabs">
       <property name="tabPosition">
@@ -37,7 +37,7 @@
        <attribute name="title">
         <string>Badge Preview</string>
        </attribute>
-       <layout class="QVBoxLayout" name="verticalLayout_2">
+       <layout class="QHBoxLayout" name="verticalLayout_2" stretch="2,3">
         <item>
          <widget class="WebViewer" name="preview" native="true">
           <property name="sizePolicy">
@@ -52,6 +52,122 @@
            </url>
           </property>
          </widget>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="controlsLayout">
+          <item>
+           <layout class="QFormLayout" name="formLayout">
+            <property name="fieldGrowthPolicy">
+             <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
+            </property>
+            <item row="0" column="0">
+             <widget class="QLabel" name="label_3">
+              <property name="text">
+               <string>Template</string>
+              </property>
+             </widget>
+            </item>
+            <item row="0" column="1">
+             <widget class="QComboBox" name="templateSelector"/>
+            </item>
+            <item row="1" column="0">
+             <widget class="Line" name="line_2">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="0">
+             <widget class="QLabel" name="label_4">
+              <property name="text">
+               <string>QR</string>
+              </property>
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <layout class="QHBoxLayout" name="horizontalLayout">
+              <item>
+               <widget class="QLineEdit" name="qrInput">
+                <property name="minimumSize">
+                 <size>
+                  <width>150</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="text">
+                 <string>http://makeict.org/</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QToolButton" name="testQR">
+                <property name="toolTip">
+                 <string>Test this QR code</string>
+                </property>
+                <property name="statusTip">
+                 <string>Test this QR code</string>
+                </property>
+                <property name="whatsThis">
+                 <string>This button will attempt to launch the QR code data as a URL in your default web browser.</string>
+                </property>
+                <property name="text">
+                 <string>🌎</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+            <item row="3" column="1">
+             <widget class="Line" name="line_4">
+              <property name="orientation">
+               <enum>Qt::Horizontal</enum>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QPushButton" name="captureButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>📷
+Capture picture</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="printButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>🖶
+Print and log</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QPushButton" name="logButton">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Log only</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -109,114 +225,6 @@
       </widget>
      </widget>
     </item>
-    <item>
-     <layout class="QVBoxLayout" name="controlsLayout" stretch="2,2,1,0">
-      <item>
-       <layout class="QFormLayout" name="formLayout">
-        <property name="fieldGrowthPolicy">
-         <enum>QFormLayout::AllNonFixedFieldsGrow</enum>
-        </property>
-        <item row="0" column="0">
-         <widget class="QLabel" name="label_3">
-          <property name="text">
-           <string>Template</string>
-          </property>
-         </widget>
-        </item>
-        <item row="0" column="1">
-         <widget class="QComboBox" name="templateSelector"/>
-        </item>
-        <item row="1" column="0">
-         <widget class="Line" name="line_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="0">
-         <widget class="QLabel" name="label_4">
-          <property name="text">
-           <string>QR</string>
-          </property>
-         </widget>
-        </item>
-        <item row="2" column="1">
-         <layout class="QHBoxLayout" name="horizontalLayout">
-          <item>
-           <widget class="QLineEdit" name="qrInput">
-            <property name="minimumSize">
-             <size>
-              <width>150</width>
-              <height>0</height>
-             </size>
-            </property>
-            <property name="text">
-             <string>http://makeict.org/</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QToolButton" name="testQR">
-            <property name="toolTip">
-             <string>Test this QR code</string>
-            </property>
-            <property name="statusTip">
-             <string>Test this QR code</string>
-            </property>
-            <property name="whatsThis">
-             <string>This button will attempt to launch the QR code data as a URL in your default web browser.</string>
-            </property>
-            <property name="text">
-             <string>🌎</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item row="3" column="1">
-         <widget class="Line" name="line_4">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-       </layout>
-      </item>
-      <item>
-       <widget class="QPushButton" name="captureButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Capture picture</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="printButton">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="text">
-         <string>Print and log</string>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="logButton">
-        <property name="text">
-         <string>Log only</string>
-        </property>
-       </widget>
-      </item>
-     </layout>
-    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menubar">
@@ -256,7 +264,7 @@
    </widget>
    <widget class="QMenu" name="menuPrint_mode">
     <property name="title">
-     <string>&amp;Options</string>
+     <string>Optio&amp;ns</string>
     </property>
     <addaction name="actionUseInkscape"/>
    </widget>
@@ -367,7 +375,6 @@
   <tabstop>testQR</tabstop>
   <tabstop>captureButton</tabstop>
   <tabstop>printButton</tabstop>
-  <tabstop>logButton</tabstop>
   <tabstop>previewTabs</tabstop>
   <tabstop>cancelCapture</tabstop>
  </tabstops>

@@ -172,7 +172,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 							tabs.setCurrentWidget(self.mainWindow.cameraTab)
 
 					self.camera.statusChanged.connect(statusChanged)
-				self.camera.start()
+				
+				QtCore.QTimer.singleShot(1, self.camera.start)
+				
 			except Exception as exc:
 				print(exc)
 				self._showError('Failed to initialize camera. :(')

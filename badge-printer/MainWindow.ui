@@ -191,7 +191,7 @@
          </sizepolicy>
         </property>
         <property name="text">
-         <string>Capture</string>
+         <string>Capture picture</string>
         </property>
        </widget>
       </item>

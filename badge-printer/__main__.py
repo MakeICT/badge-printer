@@ -86,6 +86,10 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.entryLogger.logComplete.connect(self._entryLoggingComplete)
 			self.entryLogger.fallbackError.connect(self._entryLogFallbackError)
 
+		if '--template' in args:
+			self.defaultTemplate = args[1+args.index('--template')]
+		else:
+			self.defaultTemplate = None
 
 	def doItNowDoItGood(self):
 		self.reloadTemplates()
@@ -277,7 +281,11 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			templates.sort()
 			combobox.addItems(templates)
 
-			combobox.setCurrentIndex(combobox.count()-1)
+			if self.defaultTemplate is not None:
+				index = combobox.findText(self.defaultTemplate)
+				if index > -1:
+					combobox.setCurrentIndex(index)
+					
 			self.loadTemplate(combobox.currentText())
 		except:
 			self._showError('Failed to load templates from %s' % os.path.abspath('templates'))

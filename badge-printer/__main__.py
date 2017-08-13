@@ -4,7 +4,7 @@
 import os, sys, traceback, io
 import shutil
 from functools import partial
-import subprocess
+import subprocess, time
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5 import QtWebEngineWidgets, QtPrintSupport, QtMultimediaWidgets
@@ -72,7 +72,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.mainWindow.logButton.deleteLater()
 			self.mainWindow.logButton = None
 
-			self.mainWindow.printButton.setText('Print')
+			self.mainWindow.printButton.setText('🖶\nPrint')
 			self.mainWindow.actionPrint.setText('Print...')
 			self.mainWindow.menuFile.removeAction(self.mainWindow.actionLogOnly)
 			self.mainWindow.actionLogOnly.deleteLater()
@@ -203,8 +203,30 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.mainWindow.previewTabs.setCurrentWidget(self.mainWindow.badgePreviewTab)
 
+	def _launchInkscapeToPrint(self, filename):
+		try:
+			printProcess = subprocess.Popen(['zinkscape','--verb','FilePrint','--verb','FileQuit',filename])
+		except Exception as exc:
+			return False
+		
+		# try to hide the Inkscape window
+		try:
+			# wait for Print Dialog
+			windowID = ''
+			while windowID == '':
+				windowID = subprocess.getoutput("wmctrl -pl | grep \"%s.*Print\" | sort | cut -d \" \" -f 1" % printProcess.pid)
+				time.sleep(0.01)
+
+			# get windowID of Inkscape window
+			windowID = subprocess.getoutput("wmctrl -pl | grep \"%s.*Inkscape\" | sort | cut -d \" \" -f 1" % printProcess.pid)
+			# hide the window
+			subprocess.Popen(['xdotool','windowunmap',windowID])
+		except:
+			pass # no big deal.
+
+		return True
+
 	def attemptPrint(self):
-		self.mainWindow.statusBar().showMessage('Archiving images...')
 		name = self.makeFileFriendlyName()
 		filename = os.path.join('archive', 'badges', '%s.svg' % name)
 		self.saveACopy(filename)
@@ -213,11 +235,17 @@ class BadgePrinterApp(QtWidgets.QApplication):
 				os.path.join('archive', '_capture.jpg'),
 				os.path.join('archive', 'captures', '%s.jpg' % name)
 			)
+		self.mainWindow.statusBar().showMessage('Images saved!')
 
 		if self.mainWindow.actionUseInkscape.isChecked():
-			printProcess = subprocess.Popen(['inkscape','--verb','FilePrint','--verb','FileQuit',filename])
-			print(printProcess.pid)
+			self.mainWindow.statusBar().showMessage('Printing via Inkscape...', 5000)
+			inkscapeFailed = not self._launchInkscapeToPrint(filename)
+			if inkscapeFailed:
+				self.mainWindow.statusBar().showMessage('Inkscape failed, printing via system...', 5000)
 		else:
+			inkscapeFailed = True
+
+		if inkscapeFailed:
 			self.printer = QtPrintSupport.QPrinter()
 			dialog = QtPrintSupport.QPrintDialog(self.printer, self.mainWindow)
 			if dialog.exec_() != QtWidgets.QDialog.Accepted:
@@ -228,8 +256,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 					self.mainWindow.statusBar().showMessage('Printing done!', 5000)
 				else:
 					self.mainWindow.statusBar().showMessage('Printing failed :(')
-				self.mainWindow.statusBar().showMessage('Printing...')
-				self.mainWindow.preview.page().print(self.printer, printingDone)
+					
+			self.mainWindow.statusBar().showMessage('Printing...')
+			self.mainWindow.preview.page().print(self.printer, printingDone)
 		
 		self.addLogEntry()
 

@@ -130,7 +130,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 	def testQR(self):
 		webbrowser.open(self.mainWindow.qrInput.text())
 	
-	def saveACopy(self, filename=False):
+	def saveACopy(self, filename=False, callback=None):
 		if not isinstance(filename, str):
 			result = QtWidgets.QFileDialog.getSaveFileName(
 				self.mainWindow,
@@ -149,6 +149,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			with open(filename, 'w') as saveFile:
 				saveFile.write(content)
 				saveFile.flush()
+				
+			if callback is not None:
+				callback(filename)
 
 		self.mainWindow.preview.processContent(partial(doSave, filename))
 
@@ -226,20 +229,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			pass # no big deal.
 
 		return True
-
-	def attemptPrint(self):
-		name = self.makeFileFriendlyName()
-		filename = os.path.join('archive', 'badges', '%s.svg' % name)
-		self.saveACopy(filename)
-		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
-			shutil.move(
-				os.path.join('archive', '_capture.jpg'),
-				os.path.join('archive', 'captures', '%s.jpg' % name)
-			)
-		self.mainWindow.statusBar().showMessage('Images saved!')
 		
-		inkscapeFailed = False
-		
+	def _fileIsReadyToPrint(self, filename):
+		inkscapeFailed = False		
 		if self.mainWindow.actionPrintImmediately.isChecked():
 			self.mainWindow.statusBar().showMessage('Printing Immediately...', 5000)				
 			psFilename = str(filename.split(',')[0] + '.ps')
@@ -271,6 +263,17 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.mainWindow.preview.page().print(self.printer, printingDone)
 		
 		self.addLogEntry()
+
+	def attemptPrint(self):
+		name = self.makeFileFriendlyName()
+		filename = os.path.join('archive', 'badges', '%s.svg' % name)
+		self.saveACopy(filename, self._fileIsReadyToPrint)
+		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
+			shutil.move(
+				os.path.join('archive', '_capture.jpg'),
+				os.path.join('archive', 'captures', '%s.jpg' % name)
+			)
+		self.mainWindow.statusBar().showMessage('Images saved!')
 
 	def _entryLoggingComplete(self, ok, error):
 		if ok:

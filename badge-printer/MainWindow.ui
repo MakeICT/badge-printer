@@ -267,6 +267,7 @@ Print and log</string>
      <string>Optio&amp;ns</string>
     </property>
     <addaction name="actionUseInkscape"/>
+    <addaction name="actionPrintImmediately"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCameras"/>
@@ -352,6 +353,17 @@ Print and log</string>
    </property>
    <property name="text">
     <string>Use &amp;Inkscape to print</string>
+   </property>
+  </action>
+  <action name="actionPrintImmediately">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Use &amp;Print without opening dialog</string>
    </property>
   </action>
  </widget>

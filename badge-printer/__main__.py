@@ -148,6 +148,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		def doSave(filename, content):
 			with open(filename, 'w') as saveFile:
 				saveFile.write(content)
+				saveFile.flush()
 
 		self.mainWindow.preview.processContent(partial(doSave, filename))
 
@@ -170,7 +171,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 					def statusChanged(status):
 						if status == QtMultimedia.QCamera.ActiveStatus:
 							tabs.setCurrentWidget(self.mainWindow.cameraTab)
-
+ 
 					self.camera.statusChanged.connect(statusChanged)
 				
 				QtCore.QTimer.singleShot(1, self.camera.start)
@@ -205,7 +206,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 	def _launchInkscapeToPrint(self, filename):
 		try:
-			printProcess = subprocess.Popen(['zinkscape','--verb','FilePrint','--verb','FileQuit',filename])
+			printProcess = subprocess.Popen(['inkscape','--verb','FilePrint','--verb','FileQuit',filename])
 		except Exception as exc:
 			return False
 		
@@ -236,8 +237,17 @@ class BadgePrinterApp(QtWidgets.QApplication):
 				os.path.join('archive', 'captures', '%s.jpg' % name)
 			)
 		self.mainWindow.statusBar().showMessage('Images saved!')
+		
+		inkscapeFailed = False
+		
+		if self.mainWindow.actionPrintImmediately.isChecked():
+			self.mainWindow.statusBar().showMessage('Printing Immediately...', 5000)				
+			psFilename = str(filename.split(',')[0] + '.ps')
+			printer = 'DYMO_LabelWriter_450_Turbo'
+			os.system(str('inkscape -P ' + psFilename + ' ' + str(filename)))
+			os.system('lpr -P ' + printer + ' ' + psFilename)
 
-		if self.mainWindow.actionUseInkscape.isChecked():
+		elif self.mainWindow.actionUseInkscape.isChecked():
 			self.mainWindow.statusBar().showMessage('Printing via Inkscape...', 5000)
 			inkscapeFailed = not self._launchInkscapeToPrint(filename)
 			if inkscapeFailed:

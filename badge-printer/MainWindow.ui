@@ -212,12 +212,19 @@ Print and log</string>
          <number>0</number>
         </property>
         <item>
-         <widget class="QCameraViewfinder" name="cameraViewFinder" native="true"/>
+         <widget class="ClickableCameraViewfinder" name="cameraViewFinder" native="true"/>
+        </item>
+        <item>
+         <widget class="QPushButton" name="grabCapture">
+          <property name="text">
+           <string>📷 Capture</string>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QPushButton" name="cancelCapture">
           <property name="text">
-           <string>⊘ Cancel capture</string>
+           <string>⊘ Cancel</string>
           </property>
          </widget>
         </item>
@@ -357,9 +364,9 @@ Print and log</string>
  </widget>
  <customwidgets>
   <customwidget>
-   <class>QCameraViewfinder</class>
+   <class>ClickableCameraViewfinder</class>
    <extends>QWidget</extends>
-   <header>PyQt5/QtMultimediaWidgets</header>
+   <header>CustomWidgets</header>
    <container>1</container>
   </customwidget>
   <customwidget>
@@ -421,6 +428,22 @@ Print and log</string>
     <hint type="sourcelabel">
      <x>499</x>
      <y>449</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>-1</x>
+     <y>-1</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>grabCapture</sender>
+   <signal>clicked()</signal>
+   <receiver>actionCapture</receiver>
+   <slot>trigger()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>357</x>
+     <y>385</y>
     </hint>
     <hint type="destinationlabel">
      <x>-1</x>

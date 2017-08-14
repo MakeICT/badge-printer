@@ -2,6 +2,21 @@ import base64
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
 from PyQt5 import QtWebEngineWidgets
+from PyQt5 import QtMultimediaWidgets
+
+class ClickableCameraViewfinder(QtMultimediaWidgets.QCameraViewfinder):
+	clicked = QtCore.pyqtSignal()
+
+	def __init__(self, parent=None):
+		super().__init__(parent)
+		self.installEventFilter(self)
+
+	def eventFilter(self, obj, event):
+		if event.type() == QtCore.QEvent.MouseButtonRelease:
+			self.clicked.emit()
+
+		return False
+
 
 class WebViewer(QtWebEngineWidgets.QWebEngineView):
 	documentReady = QtCore.pyqtSignal(object)

@@ -7,7 +7,7 @@ from functools import partial
 import subprocess, time
 
 from PyQt5 import QtCore, QtGui, QtWidgets, uic
-from PyQt5 import QtWebEngineWidgets, QtPrintSupport, QtMultimediaWidgets
+from PyQt5 import QtWebEngineWidgets, QtPrintSupport
 from PyQt5 import QtMultimedia
 
 import pyqrcode
@@ -43,6 +43,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.previewTabs.tabBar().hide()
 		
 		self.mainWindow.cameraViewFinder.setAspectRatioMode(QtCore.Qt.KeepAspectRatio)
+		self.mainWindow.cameraViewFinder.clicked.connect(self.mainWindow.actionCapture.trigger)
 
 		self.mainWindow.actionLoadTemplate.triggered.connect(self.browseForTemplate)
 		self.mainWindow.actionSaveACopy.triggered.connect(self.saveACopy)
@@ -205,7 +206,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 	def _launchInkscapeToPrint(self, filename):
 		try:
-			printProcess = subprocess.Popen(['zinkscape','--verb','FilePrint','--verb','FileQuit',filename])
+			printProcess = subprocess.Popen(['inkscape','--verb','FilePrint','--verb','FileQuit',filename])
 		except Exception as exc:
 			return False
 		

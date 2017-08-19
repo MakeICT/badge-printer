@@ -29,6 +29,15 @@ Install the following dependencies:
 ```sh
 $ python3 badge-printer
 ```
+### Quick Print
+
+Quick Print is an easy way to expedite the printing process for batches of nametags.
+1. First, select a template and enter details as you normally would.
+2. Next, make sure the correct printer is selected in the Quick Print selector.
+3. Lastly, hit the print button in the Quick Print section.
+
+For even faster processing, pressing the "ENTER" key while in any template field will send the file to the selected printer. After Quick Print is triggered, focus is moved to the first template field to prepare you for the next entry.
+
 
 ### Templates
 Templates must be SVG, and it's only been tested with Inkscape SVG's. The following embedded image fields are supported:

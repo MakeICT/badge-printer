@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import os, sys, traceback, io
-import shutil
+import shutil, tempfile
 from functools import partial
 import subprocess, time
 
@@ -14,6 +14,7 @@ import pyqrcode
 import webbrowser
 
 from log import WebFormLogger
+import CustomWidgets
 
 CHOOSE_CUSTOM = object()
 RELOAD = object()
@@ -36,7 +37,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.qrTimer = QtCore.QTimer()
 		self.qrTimer.setSingleShot(True)
-		self.qrTimer.setInterval(1000)
+		self.qrTimer.setInterval(5000)
 		self.qrTimer.timeout.connect(self.updateQRDisplay)
 
 		self.mainWindow = uic.loadUi(self._path('MainWindow.ui'))
@@ -52,12 +53,15 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.mainWindow.actionLogOnly.triggered.connect(self.addLogEntry)
 		self.mainWindow.actionImportImage.triggered.connect(self.browseForImage)
 		self.mainWindow.actionAbout.triggered.connect(self.showAppInfo)
+		self.mainWindow.actionQuickPrintHelp.triggered.connect(self.showQuickPrintHelp)
 
 		self.mainWindow.actionExit.triggered.connect(self.exit)
 		self.mainWindow.testQR.clicked.connect(self.testQR)
 		self.mainWindow.cancelCapture.clicked.connect(self.cancelCapture)
+		self.mainWindow.quickPrint.clicked.connect(self.quickPrint)
 
 		self.mainWindow.templateSelector.currentIndexChanged.connect(self._templateSelected)
+		self.mainWindow.quickPrintSelector.currentIndexChanged.connect(self._quickPrintSelectorChanged)
 
 		self.mainWindow.preview.documentReady.connect(self._templateLoadComplete)
 
@@ -72,7 +76,6 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.mainWindow.logButton.deleteLater()
 			self.mainWindow.logButton = None
 
-			self.mainWindow.printButton.setText('🖶\nPrint')
 			self.mainWindow.actionPrint.setText('Print...')
 			self.mainWindow.menuFile.removeAction(self.mainWindow.actionLogOnly)
 			self.mainWindow.actionLogOnly.deleteLater()
@@ -92,8 +95,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.defaultTemplate = None
 
 	def doItNowDoItGood(self):
-		self.reloadTemplates()
+		self.refreshTemplates()
 		self.refreshCameras()
+		self.refreshPrinters()
 
 		self.mainWindow.showNormal()
 		self.exec_()
@@ -107,6 +111,18 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			'<p>For more information, visit <a href="http://github.com/makeict/badge-printer">this project\'s GitHub page</a>.</p>' +
 			'<p>For more immediate help, send an email to <a href="it@makeict.org">it@makeict.org</a>.</p>'
 		)
+	def showQuickPrintHelp(self):
+		QtWidgets.QMessageBox.about(
+			self.mainWindow,
+			'MakeICT Badge Printer - Quick Print Help',
+			'<p>Quick Print is an easy way to expedite the printing process for batches.</p>' + 
+			'<ol>' +
+				'<li>First, select a template and enter details as you normally would.</li>' +
+				'<li>Next, make sure the correct printer is selected in the Quick Print selector.</li>' +
+				'<li>Lastly, hit the print button in the Quick Print section.</li>' +
+			'</ol>' +
+			'<p>For even faster processing, pressing the "ENTER" key while in any template field will send the file to the selected printer and prepare you for the next entry.</p>'
+		)
 
 	def _path(self, *paths):
 		return os.path.join(self.basePath, *paths)
@@ -118,7 +134,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		if data == CHOOSE_CUSTOM:
 			self.browseForTemplate()
 		elif data == RELOAD:
-			self.reloadTemplates()
+			self.refreshTemplates()
 		else:
 			self.loadTemplate(combobox.currentText())
 
@@ -232,18 +248,25 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		
 	def _fileIsReadyToPrint(self, filename):
 		inkscapeFailed = False		
-		if self.mainWindow.actionPrintImmediately.isChecked():
-			self.mainWindow.statusBar().showMessage('Printing Immediately...', 5000)				
-			psFilename = str(filename.split(',')[0] + '.ps')
-			printer = 'DYMO_LabelWriter_450_Turbo'
-			os.system(str('inkscape -P ' + psFilename + ' ' + str(filename)))
-			os.system('lpr -P ' + printer + ' ' + psFilename)
+		if printer is not None and isinstance(printer, QtPrintSupport.QPrinterInfo):
+			# quick print!
+			self.mainWindow.statusBar().showMessage('Quick print > render...')
+			psFilename = tempfile.mkstemp('.ps')[1]
+			process = subprocess.Popen(['inkscape','-P',psFilename,filename])
+			process.wait()
+
+			self.mainWindow.statusBar().showMessage('Quick print > print...')
+			process = subprocess.Popen(['lpr','-P',printer.printerName(),psFilename])
+			process.wait()
+			os.unlink(psFilename)
+			self.mainWindow.statusBar().showMessage('Quick print done!')
 
 		elif self.mainWindow.actionUseInkscape.isChecked():
 			self.mainWindow.statusBar().showMessage('Printing via Inkscape...', 5000)
 			inkscapeFailed = not self._launchInkscapeToPrint(filename)
 			if inkscapeFailed:
 				self.mainWindow.statusBar().showMessage('Inkscape failed, printing via system...', 5000)
+
 		else:
 			inkscapeFailed = True
 
@@ -263,6 +286,10 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.mainWindow.preview.page().print(self.printer, printingDone)
 		
 		self.addLogEntry()
+		
+		if len(self.templateElements) > 0:
+			self.templateElements[0].setFocus()
+			self.templateElements[0].selectAll()
 
 	def attemptPrint(self):
 		name = self.makeFileFriendlyName()
@@ -314,7 +341,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		# @TODO: maybe check if changes made since last print or save
 		self.quit()
 
-	def reloadTemplates(self):
+	def refreshTemplates(self):
 		combobox = self.mainWindow.templateSelector
 		combobox.clear()
 		templates = []
@@ -336,7 +363,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		combobox.insertSeparator(len(templates))
 		combobox.addItem('✎ Choose custom...', CHOOSE_CUSTOM)
-		combobox.addItem('⟳ Reload templates', RELOAD)
+		combobox.addItem('⟳ Refresh templates', RELOAD)
 
 	def loadTemplate(self, filename):
 		self.mainWindow.preview.hide()
@@ -375,7 +402,9 @@ class BadgePrinterApp(QtWidgets.QApplication):
 				isFirstName = element['id'].lower() == 'first name'
 				isLastName = element['id'].lower() == 'last name'
 
-				widget = QtWidgets.QLineEdit(self.mainWindow)
+				widget = CustomWidgets.LineEditSubmitter(self.mainWindow)
+				widget.enterKeyPressed.connect(self.quickPrint)
+
 				if element['id'] in rememberedValues:
 					widget.setText(rememberedValues[element['id']])
 				else:
@@ -422,6 +451,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		self.qrTimer.start()
 
 	def updateQRDisplay(self):
+		self.qrTimer.stop()
 		buffer = io.BytesIO()
 		qr = pyqrcode.create(self.mainWindow.qrInput.text())
 		qr.png(buffer, scale=10, quiet_zone=0)
@@ -458,6 +488,33 @@ class BadgePrinterApp(QtWidgets.QApplication):
 		actionRefreshCameras = QtWidgets.QAction('⟳ &Refresh', self.mainWindow.menuCameras)
 		self.mainWindow.menuCameras.addAction(actionRefreshCameras)
 		actionRefreshCameras.triggered.connect(self.refreshCameras)
+
+	def refreshPrinters(self):
+		self.mainWindow.quickPrintSelector.clear()
+		self.mainWindow.quickPrint.setEnabled(False)
+
+		availablePrinters = QtPrintSupport.QPrinterInfo.availablePrinters()
+		if len(availablePrinters) == 0:
+			self._showError('No printers available. Are you sure it\'s plugged in and installed?')
+		else:
+			for printerInfo in availablePrinters:
+				self.mainWindow.quickPrintSelector.addItem(printerInfo.printerName(), printerInfo)
+				if printerInfo.isDefault():
+					self.mainWindow.quickPrintSelector.setCurrentIndex(self.mainWindow.quickPrintSelector.count()-1)
+
+			self.mainWindow.quickPrintSelector.addItem('⟳ Refresh', RELOAD)
+
+	def _quickPrintSelectorChanged(self, index):
+		printer = self.mainWindow.quickPrintSelector.currentData()
+		if printer == RELOAD:
+			self.refreshPrinters()
+		else:
+			self.mainWindow.quickPrint.setEnabled(True)
+
+	def quickPrint(self):
+		self.updateQRDisplay()
+		printer = self.mainWindow.quickPrintSelector.currentData()
+		QtCore.QTimer.singleShot(1, partial(self.attemptPrint, printer))
 
 	def cancelCapture(self):
 		self.camera.stop()

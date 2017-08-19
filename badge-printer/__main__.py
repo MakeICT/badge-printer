@@ -37,7 +37,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		self.qrTimer = QtCore.QTimer()
 		self.qrTimer.setSingleShot(True)
-		self.qrTimer.setInterval(5000)
+		self.qrTimer.setInterval(500)
 		self.qrTimer.timeout.connect(self.updateQRDisplay)
 
 		self.mainWindow = uic.loadUi(self._path('MainWindow.ui'))

@@ -18,6 +18,20 @@ class ClickableCameraViewfinder(QtMultimediaWidgets.QCameraViewfinder):
 		return False
 
 
+class LineEditSubmitter(QtWidgets.QLineEdit):
+	enterKeyPressed = QtCore.pyqtSignal()
+
+	def __init__(self, parent=None):
+		super().__init__(parent)
+		self.installEventFilter(self)
+
+	def eventFilter(self, obj, event):
+		if event.type() == QtCore.QEvent.KeyPress:
+			if event.key() in [QtCore.Qt.Key_Enter, QtCore.Qt.Key_Return]:
+				self.enterKeyPressed.emit()
+
+		return False
+
 class WebViewer(QtWebEngineWidgets.QWebEngineView):
 	documentReady = QtCore.pyqtSignal(object)
 
@@ -98,17 +112,4 @@ class WebViewer(QtWebEngineWidgets.QWebEngineView):
 			result;'''
 		self.runJS(js % (tagName, attributes), processFunction)
 
-#	def _adjustPreviewPosition(self, marginInPixels=0, printPrep=False):
-#		preview = self.mainWindow.preview
-#		preview.page().runJavaScript('''
-#			document.documentElement.style.margin = "auto";
-#			document.documentElement.style.marginTop = "%dpx";
-#		''' % marginInPixels)
-#
-#		if printPrep:
-#			preview.page().setBackgroundColor(QtCore.Qt.white)
-#		else:
-#			preview.page().setBackgroundColor(
-#				preview.palette().color(preview.backgroundRole())
-#			)
-#####
+

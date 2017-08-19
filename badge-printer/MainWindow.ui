@@ -127,6 +127,44 @@
            </layout>
           </item>
           <item>
+           <widget class="Line" name="line">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="0,1,0">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Quick print</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QComboBox" name="quickPrintSelector"/>
+            </item>
+            <item>
+             <widget class="QToolButton" name="quickPrint">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>🖶</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="Line" name="line_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
            <widget class="QPushButton" name="captureButton">
             <property name="sizePolicy">
              <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
@@ -137,20 +175,6 @@
             <property name="text">
              <string>📷
 Capture picture</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="printButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>🖶
-Print and log</string>
             </property>
            </widget>
           </item>
@@ -255,6 +279,7 @@ Print and log</string>
      <string>&amp;Help</string>
     </property>
     <addaction name="actionAbout"/>
+    <addaction name="actionQuickPrintHelp"/>
    </widget>
    <widget class="QMenu" name="menuCameras">
     <property name="title">
@@ -267,7 +292,6 @@ Print and log</string>
      <string>Optio&amp;ns</string>
     </property>
     <addaction name="actionUseInkscape"/>
-    <addaction name="actionPrintImmediately"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuCameras"/>
@@ -366,6 +390,26 @@ Print and log</string>
     <string>Use &amp;Print without opening dialog</string>
    </property>
   </action>
+  <action name="actionQuick_print">
+   <property name="text">
+    <string>Quick print</string>
+   </property>
+  </action>
+  <action name="actionUse_Inkscape_to_print">
+   <property name="text">
+    <string>Use Inkscape</string>
+   </property>
+  </action>
+  <action name="actionUse_standard_print_dialog">
+   <property name="text">
+    <string>Use standard print dialog</string>
+   </property>
+  </action>
+  <action name="actionQuickPrintHelp">
+   <property name="text">
+    <string>&amp;Quick print...</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>
@@ -386,28 +430,11 @@ Print and log</string>
   <tabstop>qrInput</tabstop>
   <tabstop>testQR</tabstop>
   <tabstop>captureButton</tabstop>
-  <tabstop>printButton</tabstop>
   <tabstop>previewTabs</tabstop>
   <tabstop>cancelCapture</tabstop>
  </tabstops>
  <resources/>
  <connections>
-  <connection>
-   <sender>printButton</sender>
-   <signal>clicked()</signal>
-   <receiver>actionPrint</receiver>
-   <slot>trigger()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>450</x>
-     <y>418</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>-1</x>
-     <y>-1</y>
-    </hint>
-   </hints>
-  </connection>
   <connection>
    <sender>captureButton</sender>
    <signal>clicked()</signal>

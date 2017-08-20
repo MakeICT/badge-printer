@@ -400,16 +400,18 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			# keep track of this to update tab order
 			lastElement = self.mainWindow.testQR
 			for element in elements:
-				isFirstName = element['id'].lower() == 'first name'
-				isLastName = element['id'].lower() == 'last name'
-
 				widget = CustomWidgets.LineEditSubmitter(self.mainWindow)
 				widget.enterKeyPressed.connect(self.quickPrint)
 
 				if element['id'] in rememberedValues:
 					widget.setText(rememberedValues[element['id']])
+				elif element['id'].lower() == 'date':
+					widget.setText(time.strftime('%Y %B %d'))
 				else:
 					widget.setText(element['textContent'])
+
+				isFirstName = element['id'].lower() == 'first name'
+				isLastName = element['id'].lower() == 'last name'
 
 				widget.textChanged.connect(partial(self.textFieldUpdated, isFirstName or isLastName))
 

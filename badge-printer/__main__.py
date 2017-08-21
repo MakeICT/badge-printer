@@ -247,8 +247,8 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		return True
 		
-	def _fileIsReadyToPrint(self, filename):
-		inkscapeFailed = False		
+	def _fileIsReadyToPrint(self, printer, filename):
+		inkscapeFailed = False
 		if printer is not None and isinstance(printer, QtPrintSupport.QPrinterInfo):
 			# quick print!
 			self.mainWindow.statusBar().showMessage('Quick print > render...')
@@ -292,10 +292,10 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.templateElements[0].setFocus()
 			self.templateElements[0].selectAll()
 
-	def attemptPrint(self):
+	def attemptPrint(self, printer=None):
 		name = self.makeFileFriendlyName()
 		filename = os.path.join('archive', 'badges', '%s.svg' % name)
-		self.saveACopy(filename, self._fileIsReadyToPrint)
+		self.saveACopy(filename, partial(self._fileIsReadyToPrint, printer))
 		if os.path.isfile(os.path.join('archive', '_capture.jpg')):
 			shutil.move(
 				os.path.join('archive', '_capture.jpg'),

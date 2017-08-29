@@ -310,6 +310,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 			self.mainWindow.statusBar().showMessage('Web logging failed. %s' % error)
 
 	def _entryLogFallbackError(self, error):
+		print(error)
 		raise error
 
 	def addLogEntry(self):

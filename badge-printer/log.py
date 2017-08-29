@@ -55,7 +55,7 @@ class WebWorkerThread(QtCore.QThread):
 		self.submissionState = 'sending'
 		try:
 			http = urllib3.PoolManager()
-			request = http.request('GET', self.url, fields=self.data)
+			request = http.request('GET', self.url, fields=self.data, timeout=1.0, retries=0)
 
 			response = request.data.decode('utf-8')
 			if response == 'ok':

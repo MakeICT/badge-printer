@@ -84,7 +84,7 @@ class BadgePrinterApp(QtWidgets.QApplication):
 
 		else:
 			self.entryLogger = WebFormLogger(
-				'https://script.google.com/macros/s/AKfycbz0IA4vDWAfQJLtBSnrtKhU1TjV5wr3lbziSRDfiNmGLgVoh0s/exec',
+				'https://script.google.com/macros/s/AKfycbwO8cLUERF5PxteS3vpi08dzYkwVTxrJH7RPi5QjAOP7aOOcJo7RJhVB9ZKxYAEoPQp/exec',
 				os.path.join('archive', 'log.txt')
 			)
 			self.entryLogger.logComplete.connect(self._entryLoggingComplete)
